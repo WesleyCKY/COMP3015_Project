@@ -30,6 +30,7 @@ public class UI extends JFrame {
 	private JTextField msgField;
 	private JTextArea chatArea;
 	private JPanel pnlColorPicker;
+	private JPanel inputName; // Panel for them to input names
 	private JPanel paintPanel;
 	private JToggleButton tglPen;
 	private JToggleButton tglBucket;

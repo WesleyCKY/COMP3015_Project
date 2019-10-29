@@ -41,8 +41,7 @@ public class KidPaint {
 
     public static void main(String[] args) {
         KidPaint kidpaint = new KidPaint("127.0.0.1", 5000);
-        UI ui = UI.getInstance();            // get the instance of UI
-        ui.setData(new int[50][50], 20);    // set the data array and block size. comment this statement to use the default data array and block size.
-        ui.setVisible(true);                // set the ui
+        InputName name = new InputName();
+        name.setVisible(true);
     }
 }

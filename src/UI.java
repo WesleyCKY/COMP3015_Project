@@ -38,7 +38,8 @@ public class UI extends JFrame {
 	private static UI instance;
 	private int selectedColor = -543230; 	//golden
 	
-	int[][] data = new int[50][50];			// pixel color data array
+	static int[][] data = new int[50][50];			// pixel color data array
+	
 	int blockSize = 16;
 	PaintMode paintMode = PaintMode.Pixel;
 	

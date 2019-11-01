@@ -1,6 +1,8 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+
 import javax.swing.*;
 
 // For user to input name
@@ -25,6 +27,13 @@ public class InputName extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				System.out.println("Hi!"+textField.getText());
+				try {
+					SimpleClient client = new SimpleClient(textField.getText()); // Create new client once input the user name
+					
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 				
 				UI ui = UI.getInstance();			// get the instance of UI
 				ui.setData(new int[50][50], 20);	// set the data array and block size. comment this statement to use the default data array and block size.

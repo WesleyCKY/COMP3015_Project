@@ -1,6 +1,9 @@
+/Client.class
 /ColorPicker$1.class
 /ColorPicker$2.class
 /ColorPicker.class
+/InputName$1.class
+/InputName.class
 /KidPaint.class
 /PaintMode.class
 /UI$1.class
@@ -11,5 +14,8 @@
 /UI$6.class
 /UI$7.class
 /UI.class
-/InputName.class
-/InputName$1.class
+/request_connect.class
+/simple_client.class
+/simple_server.class
+/SimpleClient.class
+/SimpleServer.class

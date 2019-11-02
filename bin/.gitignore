@@ -6,6 +6,8 @@
 /InputName.class
 /KidPaint.class
 /PaintMode.class
+/SimpleClient.class
+/SimpleServer.class
 /UI$1.class
 /UI$2.class
 /UI$3.class
@@ -15,7 +17,4 @@
 /UI$7.class
 /UI.class
 /request_connect.class
-/simple_client.class
 /simple_server.class
-/SimpleClient.class
-/SimpleServer.class

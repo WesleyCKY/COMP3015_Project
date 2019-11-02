@@ -80,15 +80,15 @@ public class UI extends JFrame {
 			    g2.setRenderingHints(rh);
 			    
 			    // clear the paint panel using black
-				g2.setColor(Color.black);
+				g2.setColor(Color.black); // blackground
 				g2.fillRect(0, 0, this.getWidth(), this.getHeight());
 				
 				// draw and fill circles with the specific colors stored in the data array
 				for(int x=0; x<data.length; x++) {
 					for (int y=0; y<data[0].length; y++) {
-						g2.setColor(new Color(data[x][y]));
+						g2.setColor(new Color(data[x][y])); // fill in color in circle
 						g2.fillArc(blockSize * x, blockSize * y, blockSize, blockSize, 0, 360);
-						g2.setColor(Color.darkGray);
+						g2.setColor(Color.darkGray); // draw the circles' boundaries
 						g2.drawArc(blockSize * x, blockSize * y, blockSize, blockSize, 0, 360);
 					}
 				}
@@ -131,7 +131,7 @@ public class UI extends JFrame {
 		basePanel.add(toolPanel, BorderLayout.NORTH);
 		toolPanel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		
-		
+		// set initial background color of color picker
 		pnlColorPicker = new JPanel();
 		pnlColorPicker.setPreferredSize(new Dimension(24, 24));
 		pnlColorPicker.setBackground(new Color(selectedColor));
@@ -225,10 +225,10 @@ public class UI extends JFrame {
 	 * it will be invoked if the user selected the specific color through the color picker
 	 * @param colorValue - the selected color
 	 */
-	public void selectColor(int colorValue) {
+	public void selectColor(int colorValue) { // choose a color from colorPicker
 		SwingUtilities.invokeLater(()->{
 			selectedColor = colorValue;
-			pnlColorPicker.setBackground(new Color(colorValue));
+			pnlColorPicker.setBackground(new Color(colorValue)); // set color's picker background
 		});
 	}
 		 
@@ -247,7 +247,10 @@ public class UI extends JFrame {
 	public void paintPixel(int col, int row) {
 		if (col >= data.length || row >= data[0].length) return;
 		
-		data[col][row] = selectedColor;
+		data[col][row] = selectedColor; // color of each pixel
+		
+		
+		
 		paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
 	}
 	
@@ -297,5 +300,9 @@ public class UI extends JFrame {
 		this.blockSize = blockSize;
 		paintPanel.setPreferredSize(new Dimension(data.length * blockSize, data[0].length * blockSize));
 		paintPanel.repaint();
+	}
+	
+	public int[][] getData(){
+		return data;
 	}
 }

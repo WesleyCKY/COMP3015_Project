@@ -75,7 +75,7 @@ public class ColorPicker extends JDialog {
 			@Override public void mouseReleased(MouseEvent e) {
 				try {
 					selectedColor = colorImage.getRGB(e.getX(), e.getY());
-					UI.getInstance().selectColor(selectedColor);
+					UI.getInstance().selectColor(selectedColor); // parse the value of the color to UI.java through selectColor() method
 				} catch (IndexOutOfBoundsException ex) { }
 			}
 		});

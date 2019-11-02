@@ -24,10 +24,15 @@ public class SimpleServer {
 				msg = localAddress.getHostAddress() + "\nPort Number: 1234";
 
 				DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), receivedPacket.getAddress(), 1234);
-				socket.send(packet);
-				
-				int[][] data = new int[50][50];	
+				socket.send(packet);	
 			}
+			
+//			Thread t = new Thread(() -> {
+//				
+//				
+//				
+//			});
+//			t.start();
 		}
 	}
 

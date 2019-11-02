@@ -9,7 +9,6 @@ public class KidPaint {
         InputName name = new InputName();
         name.setVisible(true);
         
-        
        // System.out.println(data[0][1]);
        
 	}

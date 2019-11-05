@@ -8,31 +8,30 @@ public class SimpleServer {
 		DatagramSocket socket = new DatagramSocket(1234);
 		DatagramPacket receivedPacket = new DatagramPacket(new byte[1024], 1024);
 		String msg; // msg that will be returned to the client
-		
+
 		while (true) {
-			
+
 			System.out.println("Listening...");
 
 			socket.receive(receivedPacket); // Keep listening the incoming packets
-			String content = new String(receivedPacket.getData(), 0, receivedPacket.getLength()); // Once received, get the content of the packet
+			String content = new String(receivedPacket.getData(), 0, receivedPacket.getLength()); // Once received, get
+																									// the content of
+																									// the packet
 
 			if (content.contains("Name:")) { // Check if it's the right packet
 				System.out.println(receivedPacket.getAddress()); // If yes, get the sender's address
-			
-				InetAddress localAddress = InetAddress.getLocalHost(); // Get Host Address
-				//System.out.println(a);
-				msg = localAddress.getHostAddress() + "\nPort Number: 1234";
 
-				DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), receivedPacket.getAddress(), 1234);
-				socket.send(packet);	
+				InetAddress localAddress = InetAddress.getLocalHost(); // Get Host Address
+				// System.out.println(a);
+				msg = localAddress.getHostAddress() + "\nPort Number: 1234";
+				socket = new DatagramSocket(4321);
+				DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), receivedPacket.getAddress(),
+						4321);
+				socket.send(packet);
+
 			}
-			
-//			Thread t = new Thread(() -> {
-//				
-//				
-//				
-//			});
-//			t.start();
+			break;
+
 		}
 	}
 

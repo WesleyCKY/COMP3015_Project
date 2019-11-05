@@ -75,17 +75,14 @@ public class SimpleClient {
 		// int[] arr;
 
 		totalSize = in.readInt();
-		//System.out.println(totalSize);
+		
+		// Read data
 		while (totalSize > 0) {
 			System.out.println("Reading data...");
 			len = in.readInt();
-			// in.read(buffer, 0, buffer.length);
-
-			//System.out.println(len);
 			totalSize--;
 			System.out.println(totalSize);
 		}
 		
-		// System.out.println(buffer);
 	}
 }

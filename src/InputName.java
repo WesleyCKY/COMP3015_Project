@@ -38,6 +38,12 @@ public class InputName extends JFrame {
 				UI ui = UI.getInstance();			// get the instance of UI
 				ui.setData(new int[50][50], 20);	// set the data array and block size. comment this statement to use the default data array and block size.
 				ui.setVisible(true);
+				for(int[] arr: ui.getData()) {
+					for (int data: arr) {
+						System.out.println(data);
+					}
+				}
+				
 				
 				setVisible(false); // If submitted, close input name window
 			}	

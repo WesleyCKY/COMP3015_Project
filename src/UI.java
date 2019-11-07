@@ -13,6 +13,7 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.awt.FlowLayout;
@@ -34,11 +35,13 @@ public class UI extends JFrame {
 	private JPanel paintPanel;
 	private JToggleButton tglPen;
 	private JToggleButton tglBucket;
+	private LinkedList<Point> paintedAreaList; // Save painted Area
+	
 	
 	private static UI instance;
 	private int selectedColor = -543230; 	//golden
 	
-	static int[][] data = new int[50][50];			// pixel color data array
+	static int[][] data = new int[50][50];	// pixel color data array
 	
 	int blockSize = 16;
 	PaintMode paintMode = PaintMode.Pixel;
@@ -105,7 +108,13 @@ public class UI extends JFrame {
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				if (paintMode == PaintMode.Area && e.getX() >= 0 && e.getY() >= 0)
-					paintArea(e.getX()/blockSize, e.getY()/blockSize);
+					paintedAreaList = paintArea(e.getX()/blockSize, e.getY()/blockSize);
+				try {
+					send(paintedAreaList);
+				} catch (IOException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
 			}
 		});
 		
@@ -249,9 +258,17 @@ public class UI extends JFrame {
 		
 		data[col][row] = selectedColor; // color of each pixel
 		
-		
+		System.out.println(data[col][row]); // print pixel
+		System.out.println(col+" "+row);
 		
 		paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
+		// send method send the changed pixel to SimpleServer class for performing differential updates
+		try {
+			send(data[col][row], col, row);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} //
 	}
 	
 	/**
@@ -259,7 +276,7 @@ public class UI extends JFrame {
 	 * @param col, row - the position of the selected pixel
 	 * @return a list of modified pixels
 	 */
-	public List paintArea(int col, int row) {
+	public LinkedList<Point> paintArea(int col, int row) {
 		LinkedList<Point> filledPixels = new LinkedList<Point>();
 
 		if (col >= data.length || row >= data[0].length) return filledPixels;
@@ -284,6 +301,7 @@ public class UI extends JFrame {
 				if (x < data.length - 1 && data[x+1][y] == oriColor) buffer.add(new Point(x+1, y));
 				if (y > 0 && data[x][y-1] == oriColor) buffer.add(new Point(x, y-1));
 				if (y < data[0].length - 1 && data[x][y+1] == oriColor) buffer.add(new Point(x, y+1));
+				
 			}
 			paintPanel.repaint();
 		}
@@ -304,5 +322,17 @@ public class UI extends JFrame {
 	
 	public int[][] getData(){
 		return data;
+	}
+	
+	// send method send the changed pixel to SimpleServer class for performing differential updates
+	public void send(int pixel, int col, int row) throws IOException {
+		SimpleClient.send(pixel, col, row);
+	}
+	
+	public void send(LinkedList<Point> list) throws IOException {
+		//SimpleClient.send(pixel, col, row);
+		for (Point p: list) {
+			SimpleClient.send(data[p.x][p.y], p.x, p.y);
+		}
 	}
 }

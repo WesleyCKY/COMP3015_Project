@@ -29,7 +29,7 @@ public class SimpleClient  extends JFrame{
 	private static DataInputStream in; // InputStream used for receiving the data sent by server
 	private int[][] downloadedSketchData;
 	private String name;
-	private UI ui;
+	private UI ui = UI.getInstance();	
 	
 
 	public SimpleClient() throws IOException {
@@ -115,22 +115,34 @@ public class SimpleClient  extends JFrame{
 		int pixel;
 		
 		arrRow = in.readInt(); // read arr_row
-		arrRow = in.readInt(); // read arr_col
-		
+		arrCol = in.readInt(); // read arr_col
+		System.out.println(arrRow);
+		System.out.println(arrCol);
 		downloadedSketchData = new int[arrRow][arrCol]; // initialise new downloaded array with size
+		
+		arrRow-=1;
+		arrCol-=1;
 		
 		while(true) {
 			pixel = in.readInt(); // read pixel
-			
-			for (int i=0; i<arrRow; i++) {
-				for (int j=0; j<arrCol; i++) {
+//			System.out.println(pixel);
+			for (int i=0; i<=arrRow; i++) {
+				for (int j=0; j<=arrCol; j++) {
 					downloadedSketchData[i][j] = pixel;
+//					System.out.println(downloadedSketchData[i][j]+"Row: "+i+" Col: "+j);
 				}
 			}
 			break;
 		}
 		
-		ui.setData(downloadedSketchData, arrRow);
+//		for (int[] i: downloadedSketchData) {
+//			for (int a: i) {
+//				System.out.println(a);
+//			}
+//		}
+		
+//		ui.setData(downloadedSketchData, arrRow+1);
+		ui.setData(downloadedSketchData, 20);
 		
 	}
 	
@@ -167,8 +179,9 @@ public class SimpleClient  extends JFrame{
 					e1.printStackTrace();
 				}
 				
-				ui = UI.getInstance();			// get the instance of UI
-				ui.setData(new int[50][50], 20);	// set the data array and block size. comment this statement to use the default data array and block size.
+//				ui = UI.getInstance();			// get the instance of UI
+//				ui.setData(new int[50][50], 20);	// set the data array and block size. comment this statement to use the default data array and block size.
+				
 				ui.setVisible(true);
 				setVisible(false); // If submitted, close input name window
 			}	

@@ -6,14 +6,60 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 public class SimpleServer {
-
+	int tcpport; // server port
+	int udpport = 9876;
 	private Socket clientSocket;
 	byte[] buffer = new byte[1024];
-	private DataInputStream in;
-	private DataOutputStream out;
+//	DataInputStream in;
+//	DataOutputStream out;
 	int[][] data = new int[50][50];
+	String msg; // msg that will be returned to the client
+	DatagramSocket socket;
+//	DatagramPacket receivedPacket;
+	ServerSocket srvSocket;
+	ArrayList<Socket> list  = new ArrayList<Socket>();
+
+	public static void main(String[] args) throws UnknownHostException {
+		SimpleServer s;
+		boolean established;
+
+		try {
+			s = new SimpleServer();
+			while (true) {
+				established = s.udpConnect(); // main thread for controlling connection
+				s.clientSocket = s.srvSocket.accept();
+				System.out.println("established");
+				if (established) {
+					System.out.println("Making thread...");
+					synchronized (s.list) {
+						s.list.add(s.clientSocket);
+						System.out.printf("Total %d clients are connected!", s.list.size());
+					}
+					Thread t = new Thread(() -> { // establish a new thread
+						try {
+							System.out.println("Calling tcpConnect()...");
+							s.tcpConnect(s.clientSocket);
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						synchronized (s.list) {
+							s.list.remove(s.clientSocket);
+						}
+					});
+					t.start();
+					// s.tcpport++;
+				}
+			}
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+	}
 
 	public SimpleServer() throws IOException {
 		// default sketch data
@@ -23,16 +69,36 @@ public class SimpleServer {
 				data[i][j] = -543230;
 			}
 		}
-//		for (int [] i : data) {
-//			for (int a: i) {
-//				System.out.print(a);
-//			}
-//		}
+		srvSocket = new ServerSocket(tcpport);
+		// establish a UDP connection
+//		udpConnect();
+//		socket.close();
 
-		int svrport = 1234;
-		DatagramSocket socket = new DatagramSocket(svrport);
+		// accept connection
+
+	}
+
+	public void tcpConnect(Socket clientSocket) throws IOException {
+		System.out.println("In tcpConnect()...");
+//		srvSocket = new ServerSocket(tcpport);
+
+//		clientSocket = srvSocket.accept();
+		System.out.println("Waiting...");
+		// establish a TCP connection
+		
+		
+
+		System.out.printf("TCP server is listening at port %d...", tcpport);
+
+		System.out.println("Accepted!");
+
+		send(); // call send default sketch
+		receive(); // call receive update method
+	}
+
+	public boolean udpConnect() throws IOException {
+		socket = new DatagramSocket(udpport);
 		DatagramPacket receivedPacket = new DatagramPacket(new byte[1024], 1024);
-		String msg; // msg that will be returned to the client
 
 		while (true) {
 
@@ -48,43 +114,35 @@ public class SimpleServer {
 
 				InetAddress localAddress = InetAddress.getLocalHost(); // Get Host Address
 				// System.out.println(a);
-				msg = localAddress.getHostAddress() + "\nPort Number: 1234";
+
+				srvSocket = new ServerSocket(0); // establish server socket by allocate a random port
+
+				// receive random port
+				tcpport = srvSocket.getLocalPort();
+//				tcpport = 8888;
+				System.out.println(tcpport);
+				msg = localAddress.getHostAddress() + ", " + tcpport; // get port
 				socket = new DatagramSocket(4321);
 				DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), receivedPacket.getAddress(),
 						4321);
 				socket.send(packet);
+				System.out.println("Sent !!!");
 
 			}
-			break;
-
+			socket.close();
+//			srvSocket.close();
+			return (true);
 		}
-		socket.close();
-		// establish a TCP connection
-		ServerSocket srvSocket = new ServerSocket(svrport);
-		// accept connection
-		clientSocket = srvSocket.accept();
-		// establish a TCP connection
-		in = new DataInputStream(clientSocket.getInputStream());
-		out = new DataOutputStream(clientSocket.getOutputStream());
-
-		System.out.printf("TCP server is listening at port %d...", svrport);
-
-		System.out.println("Accepted!");
-
-		server(clientSocket); //
-		
-		send(); //call send default sketch
-		receive(); //call receive update method
-
 	}
 
 	public void send() throws IOException {
 		// get the data cols and rows of default sketch
+		DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
 		out.writeInt(50);
 		out.writeInt(50);
 
 		System.out.println("The file size is sent!!");
-//		send out the default sketch data
+		// send out the default sketch data
 		for (int[] i : data) {
 			for (int p : i) {
 				out.writeInt(p);
@@ -95,9 +153,7 @@ public class SimpleServer {
 	}
 
 	public void receive() throws IOException { // send color pixels
-		// int[] pixelData = data;
-		// for (int[] i : pixelData) {
-		// int pix = data;
+		DataInputStream in = new DataInputStream(clientSocket.getInputStream());
 		while (true) {
 			int pix = in.readInt(); // receive a pix
 			System.out.println(pix);
@@ -109,42 +165,29 @@ public class SimpleServer {
 		}
 	}
 
-	private void server(Socket clientSocket) throws IOException {
-		// buffer
-
-		// display the client socket and port number
-		System.out.printf("Established a connection to host %s:%d\n\n", clientSocket.getInetAddress(),
-				clientSocket.getPort());
-		// set up data input and output stream
-
-		System.out.println("Established the in/output stream");
-
-		// int len = in.readInt();
-		// in.read(buffer, 0, len);
-		// System.out.println(buffer.toString());
-		// String str = "The message sent by TCP is:";
-
-		// System.out.println("message is prepared!");
-		// send out the message by TCP
-		// out.writeInt(str.length());
-		// System.out.println("message size is sent!");
-		// out.write(str.getBytes(), 0, str.length());
-		// System.out.println("message conrtent is sent!");
-		int data[][] = { { 0, 1, 2 }, { 3, 4, 5 } };
-		int fileSize = 0;
-		for (int i[] : data) {
-			fileSize += i.length;
-		}
-		out.writeInt(fileSize);
-		System.out.println("The file size is sent!!");
-
-		for (int[] i : data) {
-			for (int p : i) {
-				out.writeInt(p);
-				System.out.println(p);
-			}
-		}
-		// clientSocket.close();
-	}
+	// private void server(Socket clientSocket) throws IOException {
+	// // display the client socket and port number
+	// System.out.printf("Established a connection to host %s:%d\n\n",
+	// clientSocket.getInetAddress(),
+	// clientSocket.getPort());
+	// // set up data input and output stream
+	//
+	// System.out.println("Established the in/output stream");
+	//
+	// int data[][] = { { 0, 1, 2 }, { 3, 4, 5 } };
+	// int fileSize = 0;
+	// for (int i[] : data) {
+	// fileSize += i.length;
+	// }
+	// out.writeInt(fileSize);
+	// System.out.println("The file size is sent!!");
+	//
+	// for (int[] i : data) {
+	// for (int p : i) {
+	// out.writeInt(p);
+	// System.out.println(p);
+	// }
+	// }
+	// }
 
 }

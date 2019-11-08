@@ -17,11 +17,17 @@ public class SimpleServer {
 
 	public SimpleServer() throws IOException {
 		// default sketch data
+		System.out.println("The default data is:");
 		for (int i = 0; i <= 49; i++) {
 			for (int j = 0; j <= 49; j++) {
 				data[i][j] = -543230;
 			}
 		}
+//		for (int [] i : data) {
+//			for (int a: i) {
+//				System.out.print(a);
+//			}
+//		}
 
 		int svrport = 1234;
 		DatagramSocket socket = new DatagramSocket(svrport);
@@ -65,25 +71,24 @@ public class SimpleServer {
 
 		System.out.println("Accepted!");
 
-		server(clientSocket);
-		send();
-		receive();
+		server(clientSocket); //
+		
+		send(); //call send default sketch
+		receive(); //call receive update method
 
 	}
 
 	public void send() throws IOException {
-		int defaultFileSize = 0; 
 		// get the data cols and rows of default sketch
 		out.writeInt(50);
 		out.writeInt(50);
 
-//		send out the default sketch size 
-		out.writeInt(defaultFileSize); 
 		System.out.println("The file size is sent!!");
 //		send out the default sketch data
 		for (int[] i : data) {
 			for (int p : i) {
 				out.writeInt(p);
+				System.out.print(p);
 			}
 		}
 		System.out.println("The default sketch is sent!");

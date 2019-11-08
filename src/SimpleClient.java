@@ -42,9 +42,9 @@ public class SimpleClient  extends JFrame{
 		InetAddress broadcastAddr = InetAddress.getByName("255.255.255.255");
 
 		DatagramSocket receivedSocket = new DatagramSocket(4321); // socket used for receving
-		DatagramSocket sentSocket = new DatagramSocket(1234);
+		DatagramSocket sentSocket = new DatagramSocket(9876);
 		DatagramPacket receivedPacket = new DatagramPacket(new byte[1024], 1024);
-		DatagramPacket sentPacket = new DatagramPacket(msg.getBytes(), msg.length(), broadcastAddr, 1234);
+		DatagramPacket sentPacket = new DatagramPacket(msg.getBytes(), msg.length(), broadcastAddr, 9876);
 
 		// Send a request to server using UDP
 		sentSocket.send(sentPacket);
@@ -57,8 +57,8 @@ public class SimpleClient  extends JFrame{
 
 		// Receive back a packet from the server, which contains serverIP and serverPort
 		String receivedMsg = new String(receivedPacket.getData(), 0, receivedPacket.getLength());
-		serverIP = receivedMsg.substring(0, receivedMsg.indexOf("\n"));
-		serverPort = Integer.parseInt(receivedMsg.substring(receivedMsg.indexOf(":") + 2));
+		serverIP = receivedMsg.substring(0, receivedMsg.indexOf(","));
+		serverPort = Integer.parseInt(receivedMsg.substring(receivedMsg.indexOf(",") + 2));
 
 		System.out.println("IP:" + serverIP);
 		System.out.println("Port:" + serverPort);
@@ -68,12 +68,12 @@ public class SimpleClient  extends JFrame{
 		receivedSocket.close();
 		sentSocket.close();
 
-		establish(); // establish TCP connection
+		establishTcp(); // establish TCP connection
 		download(); // download sketch data
 	}
 
-	public void establish() throws UnknownHostException, IOException {
-		System.out.println("establishing...");
+	public void establishTcp() throws UnknownHostException, IOException {
+		System.out.println("establishing tcp connection...");
 		// Setup TCP Connection with server
 
 		// System.out.println(serverPort);
@@ -91,21 +91,21 @@ public class SimpleClient  extends JFrame{
 		// System.out.println("Set up outputStream!");
 
 		// int[][] data; // drawing data
-		int data;
-		int len;
-		int totalSize = 0;
-		byte[] buffer = new byte[1024];
-		// int[] arr;
-
-		totalSize = in.readInt();
-		
-		// Read data
-		while (totalSize > 0) {
-			System.out.println("Reading data...");
-			len = in.readInt();
-			totalSize--;
-			System.out.println(totalSize);
-		}
+//		int data;
+//		int len;
+//		int totalSize = 0;
+//		byte[] buffer = new byte[1024];
+//		// int[] arr;
+//
+//		totalSize = in.readInt();
+//		
+//		// Read data
+//		while (totalSize > 0) {
+//			System.out.println("Reading data...");
+//			len = in.readInt();
+//			totalSize--;
+//			System.out.println(totalSize);
+//		}
 		
 	}
 	

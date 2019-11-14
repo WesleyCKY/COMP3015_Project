@@ -327,6 +327,7 @@ public class UI extends JFrame {
 	// send method send the changed pixel to SimpleServer class for performing differential updates
 	public void send(int pixel, int col, int row) throws IOException {
 		SimpleClient.send(pixel, col, row);
+		System.out.println("In UI send(), Sent!!!");
 	}
 	
 	public void send(LinkedList<Point> list) throws IOException {

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 public class SimpleServer {
 	int tcpport; // server port
-	int udpport = 9876;
+	int udpport = 1234; // 
 	private Socket clientSocket;
 	byte[] buffer = new byte[1024];
 //	DataInputStream in;
@@ -122,9 +122,9 @@ public class SimpleServer {
 //				tcpport = 8888;
 				System.out.println(tcpport);
 				msg = localAddress.getHostAddress() + ", " + tcpport; // get port
-				socket = new DatagramSocket(4321);
+				// socket = new DatagramSocket(4321);
 				DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), receivedPacket.getAddress(),
-						4321);
+						receivedPacket.getPort());
 				socket.send(packet);
 				System.out.println("Sent !!!");
 
@@ -153,7 +153,12 @@ public class SimpleServer {
 	}
 
 	public void receive() throws IOException { // send color pixels
+
 		DataInputStream in = new DataInputStream(clientSocket.getInputStream());
+
+		System.out.println("I am port: "+tcpport);
+		System.out.println("I am port: "+clientSocket.getPort());
+
 		while (true) {
 			int pix = in.readInt(); // receive a pix
 			System.out.println(pix);

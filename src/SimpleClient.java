@@ -41,17 +41,22 @@ public class SimpleClient  extends JFrame{
 		String content; // read server content
 		InetAddress broadcastAddr = InetAddress.getByName("255.255.255.255");
 
-		DatagramSocket receivedSocket = new DatagramSocket(4321); // socket used for receving
-		DatagramSocket sentSocket = new DatagramSocket(9876);
+//		DatagramSocket receivedSocket = new DatagramSocket(4321); // socket used for receving
+//		DatagramSocket sentSocket = new DatagramSocket(9876);
+		DatagramSocket socket = new DatagramSocket(0);
 		DatagramPacket receivedPacket = new DatagramPacket(new byte[1024], 1024);
-		DatagramPacket sentPacket = new DatagramPacket(msg.getBytes(), msg.length(), broadcastAddr, 9876);
+		DatagramPacket sentPacket = new DatagramPacket(msg.getBytes(), msg.length(), broadcastAddr, 1234);
 
 		// Send a request to server using UDP
-		sentSocket.send(sentPacket);
+//		sentSocket.send(sentPacket);
+		socket.send(sentPacket);
+		
 		System.out.println("Sent!!!");
 
 		System.out.println("Listening...");
-		receivedSocket.receive(receivedPacket); // Receive server's response
+//		receivedSocket.receive(receivedPacket); // Receive server's response
+		socket.receive(receivedPacket);
+		
 		System.out.println(new String(receivedPacket.getData(), 0, receivedPacket.getLength()));
 		System.out.println("Received");
 
@@ -65,9 +70,10 @@ public class SimpleClient  extends JFrame{
 
 		System.out.println("yeah");
 
-		receivedSocket.close();
-		sentSocket.close();
-
+//		receivedSocket.close();
+//		sentSocket.close();
+		socket.close();
+		
 		establishTcp(); // establish TCP connection
 		download(); // download sketch data
 	}
@@ -147,9 +153,13 @@ public class SimpleClient  extends JFrame{
 	}
 	
 	public static void send(int pixel, int col, int row) throws IOException {
+//		System.out.println("In send()...");
 		out.writeInt(pixel); // send pixel
+//		System.out.println("Sent Pixel!");
 		out.writeInt(col); // send pixel_col
+//		System.out.println("Sent Pixel Col!");
 		out.writeInt(row); // send pixel_row
+//		System.out.println("Sent Pixel Row!");
 	}
 	
 	public void inputName() {

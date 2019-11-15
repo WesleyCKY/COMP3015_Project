@@ -1,9 +1,6 @@
 
 // Description: Broadcasts a request with username to the network using UDP
 //
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.DataInputStream;
@@ -12,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.Scanner;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -75,7 +73,7 @@ public class SimpleClient  extends JFrame{
 		socket.close();
 		
 		establishTcp(); // establish TCP connection
-		download(); // download sketch data
+		//download(); // download sketch data
 		
 		Thread receiveThread = new Thread(()->{
 			receiveData();
@@ -134,9 +132,14 @@ public class SimpleClient  extends JFrame{
 				col = in.readInt();
 				row = in.readInt();
 
+				System.out.println("In SimpleClient receiveData(), Pixel: "+pixel);
+				System.out.println("In SimpleClient receiveData(), Col: "+col);
+				System.out.println("In SimpleClient receiveData(), Row: "+row);
+				
 				SwingUtilities.invokeLater(() -> {
 					// textArea.append(new String(buffer, 0, len) + "\n");
 					ui.selectColor(pixel);
+					System.out.println("!!!!!!!Pixel: "+pixel);
 					ui.paintPixel(col, row);
 				});
 			}
@@ -146,7 +149,7 @@ public class SimpleClient  extends JFrame{
 
 	}
 	
-	public void download() throws IOException {
+/*	public void download() throws IOException {
 		int arrRow=0;
 		int arrCol=0;
 		int pixel;
@@ -181,7 +184,7 @@ public class SimpleClient  extends JFrame{
 //		ui.setData(downloadedSketchData, arrRow+1);
 		ui.setData(downloadedSketchData, 16);
 		
-	}
+	} */
 	
 	public static void send(int pixel, int col, int row) throws IOException {
 //		System.out.println("In send()...");
@@ -191,6 +194,20 @@ public class SimpleClient  extends JFrame{
 //		System.out.println("Sent Pixel Col!");
 		out.writeInt(row); // send pixel_row
 //		System.out.println("Sent Pixel Row!");
+	}
+	
+	public static void send(LinkedList<Point> list, int pixel) throws IOException {
+		byte buffer[] = new byte[1024];
+		int i=0;
+		for(Point p: list) {
+			out.writeInt(pixel); // color
+			out.writeInt((int) p.getX());
+			out.writeInt((int) p.getY());
+			System.out.println("getX(): "+(int) p.getX()+", getY(): "+(int) p.getY());
+			i++;
+		}
+		System.out.println("Total: "+i);
+		
 	}
 	
 	public void inputName() {

@@ -109,12 +109,6 @@ public class UI extends JFrame {
 			public void mouseReleased(MouseEvent e) {
 				if (paintMode == PaintMode.Area && e.getX() >= 0 && e.getY() >= 0)
 					paintedAreaList = paintArea(e.getX()/blockSize, e.getY()/blockSize);
-				try {
-					send(paintedAreaList);
-				} catch (IOException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
-				}
 			}
 		});
 		
@@ -236,6 +230,7 @@ public class UI extends JFrame {
 	 */
 	public void selectColor(int colorValue) { // choose a color from colorPicker
 		SwingUtilities.invokeLater(()->{
+			System.out.println("Color Value: "+colorValue);
 			selectedColor = colorValue;
 			pnlColorPicker.setBackground(new Color(colorValue)); // set color's picker background
 		});
@@ -258,27 +253,41 @@ public class UI extends JFrame {
 		
 		data[col][row] = selectedColor; // color of each pixel
 		
+		System.out.println("Selected Color: "+selectedColor);
 		System.out.println(data[col][row]); // print pixel
 		System.out.println(col+" "+row);
 		
 		paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
 		// send method send the changed pixel to SimpleServer class for performing differential updates
-
-		StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
-		System.out.println("*****************************************");
-		System.out.println(stacktrace);
-		StackTraceElement e = stacktrace[2];//maybe this number needs to be corrected
-		String methodName = e.getMethodName();
-		System.out.println(methodName);
-
-		if (methodName.equals("mouseDragged")) {
-			try {
-				send(data[col][row], col, row);
-			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			} //
+		try {
+			StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
+			System.out.println(stacktrace);
+			StackTraceElement e = stacktrace[2];
+			String methodName = e.getMethodName();
+			
+			if (methodName.equals("mouseDragged")) // distinguish paintPixel() method called by mouseDragged or receiveData in SimpleClient class
+			send(data[col][row], col, row);
+			else return;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
+		
+//		StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
+//		System.out.println("*****************************************");
+//		System.out.println(stacktrace);
+//		StackTraceElement e = stacktrace[2];//maybe this number needs to be corrected
+//		String methodName = e.getMethodName();
+//		System.out.println(methodName);
+//
+//		if (methodName.equals("mouseDragged")) {
+//			try {
+//				send(data[col][row], col, row);
+//			} catch (IOException e1) {
+//				// TODO Auto-generated catch block
+//				e1.printStackTrace();
+//			} //
+//		}
 	}
 	
 	/**
@@ -314,6 +323,20 @@ public class UI extends JFrame {
 				
 			}
 			paintPanel.repaint();
+			
+			try {
+				StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
+				System.out.println(stacktrace);
+				StackTraceElement e = stacktrace[2];
+				String methodName = e.getMethodName();
+				
+				if(methodName == "mouseReleased")
+				send(filledPixels, selectedColor);
+				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		return filledPixels;
 	}
@@ -341,11 +364,13 @@ public class UI extends JFrame {
 //		System.out.println("In UI send(), Sent!!!");
 	}
 	
-	public void send(LinkedList<Point> list) throws IOException {
-		//SimpleClient.send(pixel, col, row);
+	public void send(LinkedList<Point> list, int pixel) throws IOException {
+//		SimpleClient.send(pixel, col, row);
 //		System.out.println("send whole");
-		for (Point p: list) {
-			SimpleClient.send(data[p.x][p.y], p.x, p.y);
-		}
+//		for (Point p: list) {
+//			SimpleClient.send(data[p.x][p.y], p.x, p.y);
+//		}
+		SimpleClient.send(list, pixel);
+		
 	}
 }

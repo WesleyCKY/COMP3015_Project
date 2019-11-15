@@ -70,12 +70,13 @@ public class SimpleServer {
 
 	public SimpleServer() throws IOException {
 		// default sketch data
-		System.out.println("The default data is:");
-		for (int i = 0; i <= 49; i++) {
-			for (int j = 0; j <= 49; j++) {
-				data[i][j] = -543230;
-			}
-		}
+//		System.out.println("The default data is:");
+//		for (int i = 0; i <= 49; i++) {
+//			for (int j = 0; j <= 49; j++) {
+//				data[i][j] = -543230;
+//			}
+//		}
+		
 		srvSocket = new ServerSocket(tcpport);
 
 		while (true) {
@@ -174,6 +175,7 @@ public class SimpleServer {
 		}
 	}
 
+/*
 	public void send(Socket clientSocket) throws IOException {
 		// get the data cols and rows of default sketch
 		DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
@@ -190,7 +192,31 @@ public class SimpleServer {
 		}
 		System.out.println("The default sketch is sent!");
 	}
-
+*/
+	public void send(Socket clientSocket) throws IOException{
+		DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
+		
+//		for (int[] i : data) {
+//			for (int p : i) {
+//				out.writeInt(p);
+//				System.out.print(p);
+//			}
+//		}
+		
+		for (int row=0; row<50; row++) {
+			for (int col=0; col<50; col++) {
+//				System.out.println("Pixel == "+data[row][col]);
+				if (data[row][col] != 0) {		
+					out.writeInt(data[row][col]);
+					out.writeInt(col);
+					out.writeInt(row);
+					System.out.println("Successfully sent pixel!!!");
+				}
+					
+			}
+		}
+	}
+	
 	public void receive(Socket clientSocket) throws IOException { // send color pixels
 
 		DataInputStream in = new DataInputStream(clientSocket.getInputStream());
@@ -200,11 +226,11 @@ public class SimpleServer {
 
 		while (true) {
 			int pix = in.readInt(); // receive a pix
-			System.out.println("Pixel: "+pix);
+			System.out.println("In SimpleServer receive(), Pixel: "+pix);
 			int col = in.readInt();
-			System.out.println("Col: "+col);
+			System.out.println("In SimpleServer receive(), Col: "+col);
 			int row = in.readInt();
-			System.out.println("Row: "+row);
+			System.out.println("In SimpleServer receive(), Row: "+row);
 			data[row][col] = pix;
 
 			System.out.println("clientSocketList length: "+list.size());
@@ -216,15 +242,14 @@ public class SimpleServer {
 					DataOutputStream sout = new DataOutputStream(s.getOutputStream());
 					System.out.println(s.getPort());
 					sout.writeInt(pix); // client side need multiple thread to perform keep standby receiving and sending
-					System.out.println("Sent pixel successfully");
+					System.out.println("Sent pixel successfully, Pixel: "+pix);
 					sout.writeInt(col);
-					System.out.println("Sent col successfully");
+					System.out.println("Sent col successfully, col: "+col);
 					sout.writeInt(row);
-					System.out.println("Sent row successfully");
+					System.out.println("Sent row successfully row: "+row);
 
 				}
 			}
-
 
 
 		}

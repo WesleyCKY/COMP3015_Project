@@ -10,9 +10,9 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 public class SimpleServer {
-	int tcpport; // server port
+	int tcpport=0; // server port
 	int udpport = 1234; // 
-	private Socket clientSocket;
+	// private Socket clientSocket;
 	byte[] buffer = new byte[1024];
 //	DataInputStream in;
 //	DataOutputStream out;
@@ -22,41 +22,48 @@ public class SimpleServer {
 //	DatagramPacket receivedPacket;
 	ServerSocket srvSocket;
 	ArrayList<Socket> list  = new ArrayList<Socket>();
+	boolean established;
 
-	public static void main(String[] args) throws UnknownHostException {
-		SimpleServer s;
-		boolean established;
+	public static void main(String[] args) throws IOException {
+		// SimpleServer s;
+		// boolean established;
 
 		try {
-			s = new SimpleServer();
-			while (true) {
-				established = s.udpConnect(); // main thread for controlling connection
-				s.clientSocket = s.srvSocket.accept();
-				System.out.println("established");
-				if (established) {
-					System.out.println("Making thread...");
-					synchronized (s.list) {
-						s.list.add(s.clientSocket);
-						System.out.printf("Total %d clients are connected!", s.list.size());
-					}
-					Thread t = new Thread(() -> { // establish a new thread
-						try {
-							System.out.println("Calling tcpConnect()...");
-							s.tcpConnect(s.clientSocket);
-						} catch (IOException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
-						}
-						synchronized (s.list) {
-							s.list.remove(s.clientSocket);
-						}
-					});
-					t.start();
-					// s.tcpport++;
-				}
-			}
+		// 	s = new SimpleServer();
+		// 	while (true) {
+		// 		established = s.udpConnect(); // main thread for controlling connection
+		// 		s.clientSocket = s.srvSocket.accept();
+		// 		System.out.println("established");
+		// 		if (established) {
+		// 			System.out.println("Making thread...");
+		// 			synchronized (s.list) {
+		// 				s.list.add(s.clientSocket);
+		// 				System.out.printf("Total %d clients are connected!", s.list.size());
+		// 			}
+		// 			Thread t = new Thread(() -> { // establish a new thread
+		// 				try {
+		// 					System.out.println("Calling tcpConnect()...");
+		// 					s.tcpConnect(s.clientSocket);
+
+		// 				} catch (IOException e) {
+		// 					// TODO Auto-generated catch block
+		// 					// System.out.println("e Exception");
+		// 					e.printStackTrace();
+		// 				}
+		// 				synchronized (s.list) {
+		// 					System.out.println("Remove already!!!"+s.clientSocket.getPort());
+		// 					s.list.remove(s.clientSocket);
+		// 				}
+		// 			});
+		// 			t.start();
+		// 		}
+		// 	}
+
+			SimpleServer server = new SimpleServer();
+
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
+			// System.out.println("e1 Exception");
 			e1.printStackTrace();
 		}
 	}
@@ -70,6 +77,38 @@ public class SimpleServer {
 			}
 		}
 		srvSocket = new ServerSocket(tcpport);
+
+		while (true) {
+				established = udpConnect(); // main thread for controlling connection
+				Socket clientSocket = srvSocket.accept();
+				System.out.println("established");
+				
+				if (established) {
+					System.out.println("Making thread...");
+					synchronized (list) {
+						list.add(clientSocket);
+						System.out.printf("Total %d clients are connected!", list.size());
+					}
+
+					Thread t = new Thread(() -> { // establish a new thread
+						try {
+							System.out.println("Calling tcpConnect()...");
+							tcpConnect(clientSocket);
+
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
+							// System.out.println("e Exception");
+							e.printStackTrace();
+						}
+						synchronized (list) {
+							System.out.println("Remove already!!!"+clientSocket.getPort());
+							list.remove(clientSocket);
+						}
+					});
+					t.start();
+				}
+			}
+
 		// establish a UDP connection
 //		udpConnect();
 //		socket.close();
@@ -92,8 +131,8 @@ public class SimpleServer {
 
 		System.out.println("Accepted!");
 
-		send(); // call send default sketch
-		receive(); // call receive update method
+		send(clientSocket); // call send default sketch
+		receive(clientSocket); // call receive update method
 	}
 
 	public boolean udpConnect() throws IOException {
@@ -124,7 +163,7 @@ public class SimpleServer {
 				msg = localAddress.getHostAddress() + ", " + tcpport; // get port
 				// socket = new DatagramSocket(4321);
 				DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), receivedPacket.getAddress(),
-						receivedPacket.getPort());
+					receivedPacket.getPort());
 				socket.send(packet);
 				System.out.println("Sent !!!");
 
@@ -135,7 +174,7 @@ public class SimpleServer {
 		}
 	}
 
-	public void send() throws IOException {
+	public void send(Socket clientSocket) throws IOException {
 		// get the data cols and rows of default sketch
 		DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
 		out.writeInt(50);
@@ -152,21 +191,42 @@ public class SimpleServer {
 		System.out.println("The default sketch is sent!");
 	}
 
-	public void receive() throws IOException { // send color pixels
+	public void receive(Socket clientSocket) throws IOException { // send color pixels
 
 		DataInputStream in = new DataInputStream(clientSocket.getInputStream());
 
-		System.out.println("I am port: "+tcpport);
-		System.out.println("I am port: "+clientSocket.getPort());
+		System.out.println("Server port: "+tcpport);
+		System.out.println("clientSocket port: "+clientSocket.getPort());
 
 		while (true) {
 			int pix = in.readInt(); // receive a pix
-			System.out.println(pix);
+			System.out.println("Pixel: "+pix);
 			int col = in.readInt();
-			System.out.println(col);
+			System.out.println("Col: "+col);
 			int row = in.readInt();
-			System.out.println(row);
+			System.out.println("Row: "+row);
 			data[row][col] = pix;
+
+			System.out.println("clientSocketList length: "+list.size());
+
+			for (Socket s: list){
+				if(s != clientSocket) { // not send differential update to clientSocket itself
+
+					// send differential update
+					DataOutputStream sout = new DataOutputStream(s.getOutputStream());
+					System.out.println(s.getPort());
+					sout.writeInt(pix); // client side need multiple thread to perform keep standby receiving and sending
+					System.out.println("Sent pixel successfully");
+					sout.writeInt(col);
+					System.out.println("Sent col successfully");
+					sout.writeInt(row);
+					System.out.println("Sent row successfully");
+
+				}
+			}
+
+
+
 		}
 	}
 

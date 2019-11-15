@@ -41,7 +41,7 @@ public class UI extends JFrame {
 	private static UI instance;
 	private int selectedColor = -543230; 	//golden
 	
-	static int[][] data = new int[50][50];	// pixel color data array
+	private int[][] data = new int[50][50];	// pixel color data array
 	
 	int blockSize = 16;
 	PaintMode paintMode = PaintMode.Pixel;
@@ -263,12 +263,22 @@ public class UI extends JFrame {
 		
 		paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
 		// send method send the changed pixel to SimpleServer class for performing differential updates
-		try {
-			send(data[col][row], col, row);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} //
+
+		StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
+		System.out.println("*****************************************");
+		System.out.println(stacktrace);
+		StackTraceElement e = stacktrace[2];//maybe this number needs to be corrected
+		String methodName = e.getMethodName();
+		System.out.println(methodName);
+
+		if (methodName.equals("mouseDragged")) {
+			try {
+				send(data[col][row], col, row);
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			} //
+		}
 	}
 	
 	/**
@@ -326,12 +336,14 @@ public class UI extends JFrame {
 	
 	// send method send the changed pixel to SimpleServer class for performing differential updates
 	public void send(int pixel, int col, int row) throws IOException {
+//		System.out.println("send pixel");
 		SimpleClient.send(pixel, col, row);
-		System.out.println("In UI send(), Sent!!!");
+//		System.out.println("In UI send(), Sent!!!");
 	}
 	
 	public void send(LinkedList<Point> list) throws IOException {
 		//SimpleClient.send(pixel, col, row);
+//		System.out.println("send whole");
 		for (Point p: list) {
 			SimpleClient.send(data[p.x][p.y], p.x, p.y);
 		}

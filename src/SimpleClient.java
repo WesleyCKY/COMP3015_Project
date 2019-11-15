@@ -76,6 +76,13 @@ public class SimpleClient  extends JFrame{
 		
 		establishTcp(); // establish TCP connection
 		download(); // download sketch data
+		
+		Thread receiveThread = new Thread(()->{
+			receiveData();
+		});
+		
+		receiveThread.start();
+		
 	}
 
 	public void establishTcp() throws UnknownHostException, IOException {
@@ -112,7 +119,31 @@ public class SimpleClient  extends JFrame{
 //			totalSize--;
 //			System.out.println(totalSize);
 //		}
-		
+	
+	}
+
+	public void receiveData(){
+		try {
+			System.out.println("In receiveThread...");
+			while(true){
+				int pixel;
+				int col;
+				int row;
+
+				pixel = in.readInt();
+				col = in.readInt();
+				row = in.readInt();
+
+				SwingUtilities.invokeLater(() -> {
+					// textArea.append(new String(buffer, 0, len) + "\n");
+					ui.selectColor(pixel);
+					ui.paintPixel(col, row);
+				});
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 	}
 	
 	public void download() throws IOException {
@@ -148,7 +179,7 @@ public class SimpleClient  extends JFrame{
 //		}
 		
 //		ui.setData(downloadedSketchData, arrRow+1);
-		ui.setData(downloadedSketchData, 20);
+		ui.setData(downloadedSketchData, 16);
 		
 	}
 	

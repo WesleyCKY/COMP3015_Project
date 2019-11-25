@@ -173,7 +173,8 @@ public class SimpleClient extends JFrame {
 					System.out.println("In SimpleClient receiveData(), Row: " + row);
 
 					// textArea.append(new String(buffer, 0, len) + "\n");
-					ui.selectColor(pixel);
+		
+					ui.newSelectColor(pixel);
 					System.out.println("!!!!!!!Pixel: " + pixel);
 					ui.paintPixel(col, row);
 					

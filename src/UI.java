@@ -241,6 +241,11 @@ public class UI extends JFrame {
 			pnlColorPicker.setBackground(new Color(colorValue)); // set color's picker background
 
 	}
+	
+	public void newSelectColor(int colorValue) {
+		System.out.println("Color Value: "+colorValue);
+		selectedColor = colorValue;
+	}
 		 
 	/**
 	 * it will be invoked if the user inputted text in the message field

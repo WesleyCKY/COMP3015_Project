@@ -246,7 +246,7 @@ public class UI extends JFrame {
 	 * it will be invoked if the user inputted text in the message field
 	 * @param text - user inputted text
 	 */
-	private void onTextInputted(String text) {
+	public void onTextInputted(String text) {
 		chatArea.setText(chatArea.getText() + text + "\n");
 	}
 	

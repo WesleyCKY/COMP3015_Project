@@ -75,11 +75,17 @@ public class SimpleClient  extends JFrame{
 		establishTcp(); // establish TCP connection
 		//download(); // download sketch data
 		
-		Thread receiveThread = new Thread(()->{
+		Thread receiveDataThread = new Thread(()->{
 			receiveData();
 		});
 		
-		receiveThread.start();
+		receiveDataThread.start();
+		
+		Thread receiveMsgThread = new Thread(()->{
+			receiveMsg();
+		});
+		
+		receiveMsgThread.start();
 		
 	}
 
@@ -136,17 +142,26 @@ public class SimpleClient  extends JFrame{
 				System.out.println("In SimpleClient receiveData(), Col: "+col);
 				System.out.println("In SimpleClient receiveData(), Row: "+row);
 				
-				SwingUtilities.invokeLater(() -> {
+				
 					// textArea.append(new String(buffer, 0, len) + "\n");
 					ui.selectColor(pixel);
 					System.out.println("!!!!!!!Pixel: "+pixel);
 					ui.paintPixel(col, row);
-				});
+		
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
+	}
+	
+	public void receiveMsg() {
+		try {
+			byte[] buffer = new byte[1024];
+			in.read(buffer);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 /*	public void download() throws IOException {
@@ -210,7 +225,7 @@ public class SimpleClient  extends JFrame{
 	}
 	
 	public static void sendMsg(String msg) throws IOException {
-		out.writeBytes(msg);
+		out.write(msg.getBytes());
 	}
 	
 	public void inputName() {

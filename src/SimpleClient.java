@@ -207,7 +207,10 @@ public class SimpleClient  extends JFrame{
 			i++;
 		}
 		System.out.println("Total: "+i);
-		
+	}
+	
+	public static void sendMsg(String msg) throws IOException {
+		out.writeBytes(msg);
 	}
 	
 	public void inputName() {

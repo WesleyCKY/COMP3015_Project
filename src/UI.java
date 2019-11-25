@@ -205,6 +205,12 @@ public class UI extends JFrame {
 			@Override
 			public void keyReleased(KeyEvent e) {
 				if (e.getKeyCode() == 10) {		// if the user press ENTER
+					try {
+						sendMsg(msgField.getText());
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 					onTextInputted(msgField.getText());
 					msgField.setText("");
 				}
@@ -371,6 +377,9 @@ public class UI extends JFrame {
 //			SimpleClient.send(data[p.x][p.y], p.x, p.y);
 //		}
 		SimpleClient.send(list, pixel);
-		
+	}
+	
+	public void sendMsg(String msg) throws IOException {
+		SimpleClient.sendMsg(msg);
 	}
 }

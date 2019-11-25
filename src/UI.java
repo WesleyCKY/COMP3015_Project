@@ -235,11 +235,11 @@ public class UI extends JFrame {
 	 * @param colorValue - the selected color
 	 */
 	public void selectColor(int colorValue) { // choose a color from colorPicker
-		SwingUtilities.invokeLater(()->{
+		
 			System.out.println("Color Value: "+colorValue);
 			selectedColor = colorValue;
 			pnlColorPicker.setBackground(new Color(colorValue)); // set color's picker background
-		});
+
 	}
 		 
 	/**

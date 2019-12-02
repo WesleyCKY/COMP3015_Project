@@ -50,6 +50,7 @@ public class UI extends JFrame {
 	private LinkedList<Point> paintedAreaList; // Save painted Area
 	private JButton saveBtn; // button of saving
 	private JButton importBtn; // button of importing
+	private JButton clearBtn; // button of clearing all pixels
 
 	private static UI instance;
 	private int selectedColor = -543230; // golden
@@ -212,6 +213,9 @@ public class UI extends JFrame {
 		importBtn = new JButton("Import");
 		toolPanel.add(importBtn);
 
+		clearBtn = new JButton("Clear All");
+		toolPanel.add(clearBtn);
+
 		// perform save function
 		saveBtn.addActionListener(new ActionListener() {
 			@Override
@@ -239,6 +243,13 @@ public class UI extends JFrame {
 				// String filename = JOptionPane.showInputDialog("Please input the name of file:
 				// ");
 				// importFile(filename);
+			}
+		});
+
+		clearBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				clearPixels();
 			}
 		});
 
@@ -320,7 +331,7 @@ public class UI extends JFrame {
 	 */
 	public void selectColor(int colorValue) { // choose a color from colorPicker
 
-		System.out.println("Color Value: " + colorValue);
+//		System.out.println("Color Value: " + colorValue);
 		selectedColor = colorValue;
 		pnlColorPicker.setBackground(new Color(colorValue)); // set color's picker background
 
@@ -348,16 +359,16 @@ public class UI extends JFrame {
 
 		data[col][row] = selectedColor; // color of each pixel
 
-		System.out.println("Selected Color: " + selectedColor);
-		System.out.println(data[col][row]); // print pixel
-		System.out.println(col + " " + row);
+//		System.out.println("Selected Color: " + selectedColor);
+//		System.out.println(data[col][row]); // print pixel
+//		System.out.println(col + " " + row);
 
 		paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
 		// send method send the changed pixel to SimpleServer class for performing
 		// differential updates
 		try {
 			StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
-			System.out.println(stacktrace);
+//			System.out.println(stacktrace);
 			StackTraceElement e = stacktrace[2];
 			String methodName = e.getMethodName();
 
@@ -491,11 +502,16 @@ public class UI extends JFrame {
 			FileOutputStream fout = new FileOutputStream(file);
 			ObjectOutputStream out = new ObjectOutputStream(fout);
 
-			for (int[] col : data) {
-				for (int value : col) {
-					out.writeInt(value);
+			System.out.println("Saving...");
+			
+			for (int col = 0; col < 50; col++) {
+				for (int row = 0; row < 50; row++) {
+					out.writeInt(data[col][row]);
+					System.out.println("Column: "+col+", Row: "+row);
 				}
 			}
+			
+			
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -511,14 +527,16 @@ public class UI extends JFrame {
 			FileInputStream fin = new FileInputStream(file);
 			ObjectInputStream in = new ObjectInputStream(fin);
 			int value;
+			
+			System.out.println("Importing...");
 
 			for (int col = 0; col < 50; col++) {
 				for (int row = 0; row < 50; row++) {
 					value = in.readInt();
 					selectColor(value);
-					System.out.println("!!!!!!!Pixel: " + value);
+					System.out.println("Column: "+col+", Row: "+row);
 					paintPixel(col, row);
-					
+
 					send(value, col, row);
 				}
 			}
@@ -531,5 +549,23 @@ public class UI extends JFrame {
 			e.printStackTrace();
 		}
 
+	}
+
+	public void clearPixels() {
+		int value = 0;
+		for (int col = 0; col < 50; col++) {
+			for (int row = 0; row < 50; row++) {
+				selectColor(value);
+//				System.out.println("!!!!!!!Pixel: " + value);
+				paintPixel(col, row);
+				
+				try {
+					send(value, col, row);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 }

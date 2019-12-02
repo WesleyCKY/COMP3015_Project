@@ -51,24 +51,24 @@ public class SimpleClient extends JFrame {
 		// sentSocket.send(sentPacket);
 		socket.send(sentPacket);
 
-		System.out.println("Sent!!!");
+//		System.out.println("Sent!!!");
 
-		System.out.println("Listening...");
+//		System.out.println("Listening...");
 		// receivedSocket.receive(receivedPacket); // Receive server's response
 		socket.receive(receivedPacket);
 
-		System.out.println(new String(receivedPacket.getData(), 0, receivedPacket.getLength()));
-		System.out.println("Received");
+//		System.out.println(new String(receivedPacket.getData(), 0, receivedPacket.getLength()));
+//		System.out.println("Received");
 
 		// Receive back a packet from the server, which contains serverIP and serverPort
 		String receivedMsg = new String(receivedPacket.getData(), 0, receivedPacket.getLength());
 		serverIP = receivedMsg.substring(0, receivedMsg.indexOf(","));
 		serverPort = Integer.parseInt(receivedMsg.substring(receivedMsg.indexOf(",") + 2));
 
-		System.out.println("IP:" + serverIP);
-		System.out.println("Port:" + serverPort);
+//		System.out.println("IP:" + serverIP);
+//		System.out.println("Port:" + serverPort);
 
-		System.out.println("yeah");
+//		System.out.println("yeah");
 
 		// receivedSocket.close();
 		// sentSocket.close();
@@ -93,7 +93,7 @@ public class SimpleClient extends JFrame {
 	}
 
 	public void establishTcp() throws UnknownHostException, IOException {
-		System.out.println("establishing tcp connection...");
+//		System.out.println("establishing tcp connection...");
 		// Setup TCP Connection with server
 
 		// System.out.println(serverPort);
@@ -132,21 +132,21 @@ public class SimpleClient extends JFrame {
 			out.writeInt(pixel); // color
 			out.writeInt((int) p.getX());
 			out.writeInt((int) p.getY());
-			System.out.println("getX(): " + (int) p.getX() + ", getY(): " + (int) p.getY());
+//			System.out.println("getX(): " + (int) p.getX() + ", getY(): " + (int) p.getY());
 			i++;
 		}
-		System.out.println("Total: " + i);
+//		System.out.println("Total: " + i);
 	}
 
 	public static void sendMsg(String msg) {
 		try {
 			msg = textField.getText() + ": "+ msg;
-			System.out.println("Message length is " + msg.length());
+//			System.out.println("Message length is " + msg.length());
 			out.writeBoolean(false); // false if send msg
 			out.writeInt(msg.length());
 			out.write(msg.getBytes(), 0, msg.length());
-			System.out.println(false);
-			System.out.println("Sent msg already!!!!!");
+//			System.out.println(false);
+//			System.out.println("Sent msg already!!!!!");
 		} catch (IOException e) {
 			// textArea.append("Unable to send message to the server!\n");
 			e.printStackTrace();
@@ -155,7 +155,7 @@ public class SimpleClient extends JFrame {
 
 	public void receiveData() {
 		try {
-			System.out.println("In receiveDataThread...");
+//			System.out.println("In receiveDataThread...");
 			while (true) {
 
 				int pixel;
@@ -168,20 +168,20 @@ public class SimpleClient extends JFrame {
 					col = in.readInt();
 					row = in.readInt();
 
-					System.out.println("In SimpleClient receiveData(), Pixel: " + pixel);
-					System.out.println("In SimpleClient receiveData(), Col: " + col);
-					System.out.println("In SimpleClient receiveData(), Row: " + row);
+//					System.out.println("In SimpleClient receiveData(), Pixel: " + pixel);
+//					System.out.println("In SimpleClient receiveData(), Col: " + col);
+//					System.out.println("In SimpleClient receiveData(), Row: " + row);
 
 					// textArea.append(new String(buffer, 0, len) + "\n");
 					ui.selectColor(pixel);
-					System.out.println("!!!!!!!Pixel: " + pixel);
+//					System.out.println("!!!!!!!Pixel: " + pixel);
 					ui.paintPixel(col, row);
 					
 				} else { // if msg, return false
 					int len = in.readInt();
 					in.read(buffer, 0, len);
 
-					System.out.println(new String(buffer, 0, len) + "\n");
+//					System.out.println(new String(buffer, 0, len) + "\n");
 
 					ui.onTextInputted(new String(buffer, 0, len));
 				}
@@ -201,7 +201,7 @@ public class SimpleClient extends JFrame {
 					int len = in.readInt();
 					in.read(buffer, 0, len);
 
-					System.out.println(new String(buffer, 0, len) + "\n");
+//					System.out.println(new String(buffer, 0, len) + "\n");
 
 					ui.onTextInputted(new String(buffer, 0, len) + "\n");
 
@@ -230,7 +230,7 @@ public class SimpleClient extends JFrame {
 		submit.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				System.out.println("Hi!" + textField.getText());
+//				System.out.println("Hi!" + textField.getText());
 				try {
 					udpConnection(textField.getText()); // Create new client once input the user name
 

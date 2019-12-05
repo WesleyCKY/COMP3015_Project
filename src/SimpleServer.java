@@ -8,6 +8,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class SimpleServer {
 	int tcpport = 0; // server port
@@ -28,7 +31,7 @@ public class SimpleServer {
 	String studioName;
 	DataInputStream in;
 	DataOutputStream out;
-	byte[] optionBuffer;
+	byte[] optionBuffer = new byte[1024];
 
 	public static void main(String[] args) throws IOException {
 		// SimpleServer s;
@@ -60,21 +63,18 @@ public class SimpleServer {
 				in = new DataInputStream(clientSocket.getInputStream());
 				out = new DataOutputStream(clientSocket.getOutputStream());
 				System.out.println("sending studio list...");
+
 				// send the list of studio and ask for user option
 				try {
-					try {
-						Thread.sleep(100);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
 					out.writeInt(studiolist.size());
 					System.out.println("Studio list size sent!");
-
+					// sending names of
 					for (Studio studio : studiolist) {
+						System.out.println("the length of name is :"+studio.getName().length());
+						out.writeInt(studio.getName().length());
 						out.write(studio.getName().getBytes());
-						System.out.println("The list of studio: " + studio.getName());
+						System.out.println("The list of studio: "); 
+						System.out.println(studio.getName());
 					}
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -82,21 +82,35 @@ public class SimpleServer {
 				}
 
 				Thread t = new Thread(() -> { // establish a new studio thread
-					//
+					// cases
 					try {
 						receiveOption();
 						if (option.contains("create")) {
-
-							studioName = option.substring(8); // get the Studio title
+							studioName = option.substring(7); // get the Studio title
+							System.out.println("The name of the studio: " + studioName);
 							Studio studio = new Studio(studioName, in, out, clientSocket); // handle clients in each
+							System.out.println("New Studio created!");
 							synchronized (studiolist) {
 								studiolist.add(studio);
+								System.out.printf("Total %d studios are created!", studiolist.size());
+								for (Studio s : studiolist) {
+									System.out.println("Elemnts in stuio list: ");
+									System.out.println(s.getName());
+								}
 							}
+							studio.handleClient();
 						} else if (option.contains("select")) {
-							studioName = option.substring(8); // get the Studio title
-							// for() {
-							//
-							// }
+							studioName = option.substring(7); // get the Studio title
+							System.out.println("The selected studio: " + studioName);
+							for(Studio studio: studiolist) {
+								if(studio.getName().equals(studioName)) {
+									System.out.println("The Studio name found!");
+									studio.handleClient();
+								}
+								
+							}
+							
+
 						}
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
@@ -156,7 +170,7 @@ public class SimpleServer {
 
 	}
 
-	public void receiveOption() {
+	public void receiveOption(){ // capture the option from user
 		try {
 			int size = 0;
 			size = in.read(optionBuffer);

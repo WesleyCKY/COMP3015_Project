@@ -50,15 +50,15 @@ public class SimpleClient extends JFrame {
 			System.out.println("Received studio list size!!!");
 			System.out.println("Size: " + listSize);
 
-			 while (in.available() > 0) {
-			
-			 nameSize = in.read(studioBuffer);
-			 studio.add(new String(studioBuffer, 0, nameSize)); // Add new received studio to the list
-			 count++;
-			 System.out.println("Received studio!!!");
-			 System.out.println("Already receive " + count);
-			 
-			 }
+			System.out.println("in.available(): " + in.available());
+			while (in.available() > 0) {
+				nameSize = in.read(studioBuffer);
+				studio.add(new String(studioBuffer, 0, nameSize)); // Add new received studio to the list
+				count++;
+				System.out.println("Received studio!!!");
+				System.out.println("Already receive " + count);
+
+			}
 
 			if (count == listSize) {
 				System.out.println("Receive studio list!!!");
@@ -114,12 +114,12 @@ public class SimpleClient extends JFrame {
 
 		establishTcp(); // establish TCP connection
 		// download(); // download sketch data
-
-		Thread receiveDataThread = new Thread(() -> {
-			receiveData();
-		});
-
-		receiveDataThread.start();
+		//
+		// Thread receiveDataThread = new Thread(() -> {
+		// receiveData();
+		// });
+		//
+		// receiveDataThread.start();
 
 		// Thread receiveMsgThread = new Thread(() -> {
 		// System.out.println("In receive msg thread");
@@ -321,7 +321,6 @@ public class SimpleClient extends JFrame {
 								try {
 									out.write(("select " + btn.getText()).getBytes()); // If clicked, send a "select
 																						// studio" TCP package
-
 									// includes the name of studio
 									panel.setVisible(false); // If submitted, close choose studio window
 									ui.setVisible(true);
@@ -335,6 +334,12 @@ public class SimpleClient extends JFrame {
 						});
 						panel.add(btn); // Add button to the panel
 					}
+
+					Thread receiveDataThread = new Thread(() -> {
+						receiveData();
+					});
+
+					receiveDataThread.start();
 
 				} else {
 					System.out.println("Error occurred! Size of list is not expected.");

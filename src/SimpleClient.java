@@ -8,6 +8,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Scanner;
@@ -30,9 +31,45 @@ public class SimpleClient extends JFrame {
 	private UI ui = UI.getInstance();
 	private static JTextField textField = new JTextField();
 	private byte[] buffer = new byte[1024];
+	private byte[] studioBuffer;
+	private ArrayList<String> studio = new ArrayList<>(); // List of studios
 
 	public SimpleClient() throws IOException {
 		inputName(); // Input name window
+	}
+
+	public boolean receiveStudioList() {
+		int count = 0;
+		int listSize = 0;
+		int nameSize = 0;
+
+		System.out.println("In receiveStudioList()...");
+
+		try {
+			listSize = in.readInt();
+			System.out.println("Received studio list size!!!");
+			System.out.println("Size: " + listSize);
+
+			 while (in.available() > 0) {
+			
+			 nameSize = in.read(studioBuffer);
+			 studio.add(new String(studioBuffer, 0, nameSize)); // Add new received studio to the list
+			 count++;
+			 System.out.println("Received studio!!!");
+			 System.out.println("Already receive " + count);
+			 
+			 }
+
+			if (count == listSize) {
+				System.out.println("Receive studio list!!!");
+				return true;
+			} else
+				return false; // if received studio not equal to the expected size
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return false; // if received studio not equal to the expected size
 	}
 
 	public void udpConnection(String name) throws UnknownHostException, IOException {
@@ -51,24 +88,25 @@ public class SimpleClient extends JFrame {
 		// sentSocket.send(sentPacket);
 		socket.send(sentPacket);
 
-//		System.out.println("Sent!!!");
+		// System.out.println("Sent!!!");
 
-//		System.out.println("Listening...");
+		// System.out.println("Listening...");
 		// receivedSocket.receive(receivedPacket); // Receive server's response
 		socket.receive(receivedPacket);
 
-//		System.out.println(new String(receivedPacket.getData(), 0, receivedPacket.getLength()));
-//		System.out.println("Received");
+		// System.out.println(new String(receivedPacket.getData(), 0,
+		// receivedPacket.getLength()));
+		// System.out.println("Received");
 
 		// Receive back a packet from the server, which contains serverIP and serverPort
 		String receivedMsg = new String(receivedPacket.getData(), 0, receivedPacket.getLength());
 		serverIP = receivedMsg.substring(0, receivedMsg.indexOf(","));
 		serverPort = Integer.parseInt(receivedMsg.substring(receivedMsg.indexOf(",") + 2));
 
-//		System.out.println("IP:" + serverIP);
-//		System.out.println("Port:" + serverPort);
+		// System.out.println("IP:" + serverIP);
+		// System.out.println("Port:" + serverPort);
 
-//		System.out.println("yeah");
+		// System.out.println("yeah");
 
 		// receivedSocket.close();
 		// sentSocket.close();
@@ -83,32 +121,31 @@ public class SimpleClient extends JFrame {
 
 		receiveDataThread.start();
 
-//		Thread receiveMsgThread = new Thread(() -> {
-//			System.out.println("In receive msg thread");
-//			receiveMsg();
-//		});
-//
-////		receiveMsgThread.start();
+		// Thread receiveMsgThread = new Thread(() -> {
+		// System.out.println("In receive msg thread");
+		// receiveMsg();
+		// });
+		//
+		//// receiveMsgThread.start();
 
 	}
 
 	public void establishTcp() throws UnknownHostException, IOException {
-//		System.out.println("establishing tcp connection...");
+		System.out.println("establishing tcp connection...");
 		// Setup TCP Connection with server
 
-		// System.out.println(serverPort);
-		// System.out.println(serverIP);
+		System.out.println(serverPort);
+		System.out.println(serverIP);
 
 		tcpSocket = new Socket(serverIP, serverPort);
-		// System.out.println("tcp Connect!");
+		System.out.println("tcp Connect!");
 
 		// Receive the data sent by server
 		in = new DataInputStream(tcpSocket.getInputStream());
-		// System.out.println("Set up inputStream!");
+		System.out.println("Set up inputStream!");
 
 		// Send data to server
 		out = new DataOutputStream(tcpSocket.getOutputStream());
-
 
 	}
 
@@ -132,21 +169,22 @@ public class SimpleClient extends JFrame {
 			out.writeInt(pixel); // color
 			out.writeInt((int) p.getX());
 			out.writeInt((int) p.getY());
-//			System.out.println("getX(): " + (int) p.getX() + ", getY(): " + (int) p.getY());
+			// System.out.println("getX(): " + (int) p.getX() + ", getY(): " + (int)
+			// p.getY());
 			i++;
 		}
-//		System.out.println("Total: " + i);
+		// System.out.println("Total: " + i);
 	}
 
 	public static void sendMsg(String msg) {
 		try {
-			msg = textField.getText() + ": "+ msg;
-//			System.out.println("Message length is " + msg.length());
+			msg = textField.getText() + ": " + msg;
+			// System.out.println("Message length is " + msg.length());
 			out.writeBoolean(false); // false if send msg
 			out.writeInt(msg.length());
 			out.write(msg.getBytes(), 0, msg.length());
-//			System.out.println(false);
-//			System.out.println("Sent msg already!!!!!");
+			// System.out.println(false);
+			// System.out.println("Sent msg already!!!!!");
 		} catch (IOException e) {
 			// textArea.append("Unable to send message to the server!\n");
 			e.printStackTrace();
@@ -155,7 +193,7 @@ public class SimpleClient extends JFrame {
 
 	public void receiveData() {
 		try {
-//			System.out.println("In receiveDataThread...");
+			// System.out.println("In receiveDataThread...");
 			while (true) {
 
 				int pixel;
@@ -168,20 +206,20 @@ public class SimpleClient extends JFrame {
 					col = in.readInt();
 					row = in.readInt();
 
-//					System.out.println("In SimpleClient receiveData(), Pixel: " + pixel);
-//					System.out.println("In SimpleClient receiveData(), Col: " + col);
-//					System.out.println("In SimpleClient receiveData(), Row: " + row);
+					// System.out.println("In SimpleClient receiveData(), Pixel: " + pixel);
+					// System.out.println("In SimpleClient receiveData(), Col: " + col);
+					// System.out.println("In SimpleClient receiveData(), Row: " + row);
 
 					// textArea.append(new String(buffer, 0, len) + "\n");
 					ui.selectColor(pixel);
-//					System.out.println("!!!!!!!Pixel: " + pixel);
+					// System.out.println("!!!!!!!Pixel: " + pixel);
 					ui.paintPixel(col, row);
-					
+
 				} else { // if msg, return false
 					int len = in.readInt();
 					in.read(buffer, 0, len);
 
-//					System.out.println(new String(buffer, 0, len) + "\n");
+					// System.out.println(new String(buffer, 0, len) + "\n");
 
 					ui.onTextInputted(new String(buffer, 0, len));
 				}
@@ -201,7 +239,7 @@ public class SimpleClient extends JFrame {
 					int len = in.readInt();
 					in.read(buffer, 0, len);
 
-//					System.out.println(new String(buffer, 0, len) + "\n");
+					// System.out.println(new String(buffer, 0, len) + "\n");
 
 					ui.onTextInputted(new String(buffer, 0, len) + "\n");
 
@@ -213,6 +251,7 @@ public class SimpleClient extends JFrame {
 	}
 
 	public void inputName() {
+
 		this.setSize(new Dimension(320, 240));
 
 		Container container = this.getContentPane(); // Create Container to store text field
@@ -230,7 +269,7 @@ public class SimpleClient extends JFrame {
 		submit.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-//				System.out.println("Hi!" + textField.getText());
+				// System.out.println("Hi!" + textField.getText());
 				try {
 					udpConnection(textField.getText()); // Create new client once input the user name
 
@@ -239,12 +278,71 @@ public class SimpleClient extends JFrame {
 					e1.printStackTrace();
 				}
 
+				setVisible(false); // If submitted, close input name window
+
 				// ui = UI.getInstance(); // get the instance of UI
 				// ui.setData(new int[50][50], 20); // set the data array and block size.
 				// comment this statement to use the default data array and block size.
 
-				ui.setVisible(true);
-				setVisible(false); // If submitted, close input name window
+				if (receiveStudioList()) {
+					JPanel panel = new JPanel(new GridLayout(studio.size() + 3, 0)); // use the size of list to
+																						// determine the number of
+																						// buttons in the panel, extra 3
+																						// for label, create studio
+																						// btn, and textfield
+					JLabel label = new JLabel("Please create or choose the studio");
+					JTextField text = new JTextField();
+					JButton create = new JButton("Create studio");
+
+					create.addActionListener(new ActionListener() {
+						public void actionPerformed(ActionEvent e) { // If clicked, send "create studio" TCP package
+							try {
+								out.write(("create " + text.getText()).getBytes());
+
+								panel.setVisible(false); // If created, close studio window
+								ui.setVisible(true);
+							} catch (IOException e1) {
+								// TODO Auto-generated catch block
+								e1.printStackTrace();
+							}
+						}
+					});
+
+					panel.add(label);
+					panel.add(text);
+					panel.add(create);
+
+					for (int i = 0; i < studio.size(); i++) {
+						JButton btn = new JButton(studio.get(i)); // Create buttons
+
+						btn.addActionListener(new ActionListener() { // Create actionListener for each button
+							public void actionPerformed(ActionEvent e) {
+
+								try {
+									out.write(("select " + btn.getText()).getBytes()); // If clicked, send a "select
+																						// studio" TCP package
+
+									// includes the name of studio
+									panel.setVisible(false); // If submitted, close choose studio window
+									ui.setVisible(true);
+
+								} catch (IOException e1) {
+									// TODO Auto-generated catch block
+									e1.printStackTrace();
+								}
+							}
+
+						});
+						panel.add(btn); // Add button to the panel
+					}
+
+				} else {
+					System.out.println("Error occurred! Size of list is not expected.");
+					System.exit(0);
+				}
+
+				// ui.setVisible(true);
+				// setVisible(false); // If submitted, close input name window
 			}
 		});
 	}

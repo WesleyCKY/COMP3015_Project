@@ -16,6 +16,8 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
@@ -500,7 +502,7 @@ public class UI extends JFrame {
 		try {
 			File file = new File(filename);
 			FileOutputStream fout = new FileOutputStream(file);
-			ObjectOutputStream out = new ObjectOutputStream(fout);
+			DataOutputStream out = new DataOutputStream(fout);
 
 			System.out.println("Saving...");
 			
@@ -525,7 +527,7 @@ public class UI extends JFrame {
 	public void importFile(File file) {
 		try {
 			FileInputStream fin = new FileInputStream(file);
-			ObjectInputStream in = new ObjectInputStream(fin);
+			DataInputStream in = new DataInputStream(fin);
 			int value;
 			
 			System.out.println("Importing...");

@@ -21,8 +21,14 @@ public class SimpleServer {
 	DatagramSocket socket;
 	// DatagramPacket receivedPacket;
 	ServerSocket srvSocket;
-	ArrayList<Socket> list = new ArrayList<Socket>();
+	ArrayList<Studio> studiolist = new ArrayList<Studio>();
+
 	boolean established;
+	String option;
+	String studioName;
+	DataInputStream in;
+	DataOutputStream out;
+	byte[] optionBuffer;
 
 	public static void main(String[] args) throws IOException {
 		// SimpleServer s;
@@ -45,182 +51,120 @@ public class SimpleServer {
 
 		while (true) {
 			established = udpConnect(); // main thread for controlling connection
-			Socket clientSocket = srvSocket.accept();
-			System.out.println("established");
+			System.out.println("UDP established");
 
 			if (established) {
-				System.out.println("Making thread...");
-				synchronized (list) {
-					list.add(clientSocket);
-					System.out.printf("Total %d clients are connected!", list.size());
-				}
-
-				Thread t = new Thread(() -> { // establish a new thread
+				Socket clientSocket = srvSocket.accept();
+				System.out.println("TCP established");
+				System.out.print(clientSocket);
+				in = new DataInputStream(clientSocket.getInputStream());
+				out = new DataOutputStream(clientSocket.getOutputStream());
+				System.out.println("sending studio list...");
+				// send the list of studio and ask for user option
+				try {
 					try {
-						System.out.println("Calling tcpConnect()...");
-						tcpConnect(clientSocket);
-
-					} catch (IOException e) {
+						Thread.sleep(100);
+					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
-						// System.out.println("e Exception");
 						e.printStackTrace();
 					}
-					synchronized (list) {
-						System.out.println("Remove already!!!" + clientSocket.getPort());
-						list.remove(clientSocket);
+
+					out.writeInt(studiolist.size());
+					System.out.println("Studio list size sent!");
+
+					for (Studio studio : studiolist) {
+						out.write(studio.getName().getBytes());
+						System.out.println("The list of studio: " + studio.getName());
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+
+				Thread t = new Thread(() -> { // establish a new studio thread
+					//
+					try {
+						receiveOption();
+						if (option.contains("create")) {
+
+							studioName = option.substring(8); // get the Studio title
+							Studio studio = new Studio(studioName, in, out, clientSocket); // handle clients in each
+							synchronized (studiolist) {
+								studiolist.add(studio);
+							}
+						} else if (option.contains("select")) {
+							studioName = option.substring(8); // get the Studio title
+							// for() {
+							//
+							// }
+						}
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						// System.out.println("e1 Exception");
+						e1.printStackTrace();
+					}
+					synchronized (studiolist) {
+						// System.out.println("Remove already!!!" + clientSocket.getPort());
+						// slist.remove(clientSocket);
 					}
 				});
 				t.start();
 			}
+
 		}
-
-		// establish a UDP connection
-		// udpConnect();
-		// socket.close();
-
-		// accept connection
-
 	}
 
-	public void tcpConnect(Socket clientSocket) throws IOException {
-		System.out.println("In tcpConnect()...");
-		// srvSocket = new ServerSocket(tcpport);
+	// establish a UDP connection
+	// udpConnect();
+	// socket.close();
 
-		// clientSocket = srvSocket.accept();
-		System.out.println("Waiting...");
-		// establish a TCP connection
-
-		System.out.printf("TCP server is listening at port %d...", tcpport);
-
-		System.out.println("Accepted!");
-
-		send(clientSocket); // call send default sketch
-
-		receive(clientSocket);
-	}
-
-	public void receive(Socket clientSocket) throws IOException { // send color pixels
-		try {
-			DataInputStream in = new DataInputStream(clientSocket.getInputStream());
-			DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
-
-			while (true) {
-				boolean b = in.readBoolean();
-				if (!b) {
-					int len = in.readInt();
-					in.read(buffer, 0, len);
-
-					for (Socket s : list) {
-						if (s != clientSocket) { // not send differential update to clientSocket itself
-							DataOutputStream sout = new DataOutputStream(s.getOutputStream());
-							
-							String str = new String(buffer, 0, len);
-							sout.writeBoolean(b);
-							System.out.println("The data is text" + b);
-							sout.writeInt(str.length());
-							System.out.println("The data length is " + str.length());
-							sout.write(str.getBytes(), 0, str.length());
-							System.out.println("The content of the text: " + str);
-						}
-					}
-				} else {
-					int pix = in.readInt(); // receive a pix
-					System.out.println("In SimpleServer receive(), Pixel: " + pix);
-
-					int col = in.readInt();
-					System.out.println("In SimpleServer receive(), Col: " + col);
-
-					int row = in.readInt();
-					System.out.println("In SimpleServer receive(), Row: " + row);
-
-					data[row][col] = pix;
-
-					System.out.println("clientSocketList length: " + list.size());
-
-					for (Socket s : list) {
-						if (s != clientSocket) { // not send differential update to clientSocket itself
-
-							// send differential update
-							DataOutputStream sout = new DataOutputStream(s.getOutputStream());
-							System.out.println(s.getPort());
-							sout.writeBoolean(b);
-							System.out.println("The data is pixel: " + b);
-							sout.writeInt(pix); // client side need multiple thread to perform keep standby receiving
-												// and
-												// sending
-							System.out.println("Sent pixel successfully, Pixel: " + pix);
-							sout.writeInt(col);
-							System.out.println("Sent col successfully, col: " + col);
-							sout.writeInt(row);
-							System.out.println("Sent row successfully row: " + row);
-
-						}
-					}
-				}
-			}
-		} catch (IOException e) {
-		}
-		try {
-			clientSocket.close();
-		} catch (IOException e) {
-		}
-
-	}
+	// accept connection
 
 	public boolean udpConnect() throws IOException {
 		socket = new DatagramSocket(udpport);
 		DatagramPacket receivedPacket = new DatagramPacket(new byte[1024], 1024);
 
-		while (true) {
+		System.out.println("Listening...");
 
-			System.out.println("Listening...");
+		socket.receive(receivedPacket); // Keep listening the incoming packets
+		String content = new String(receivedPacket.getData(), 0, receivedPacket.getLength()); // Once received, get
+																								// the content of
+																								// the packet
 
-			socket.receive(receivedPacket); // Keep listening the incoming packets
-			String content = new String(receivedPacket.getData(), 0, receivedPacket.getLength()); // Once received, get
-																									// the content of
-																									// the packet
+		if (content.contains("Name:")) { // Check if it's the right packet
+			System.out.println(receivedPacket.getAddress()); // If yes, get the sender's address
 
-			if (content.contains("Name:")) { // Check if it's the right packet
-				System.out.println(receivedPacket.getAddress()); // If yes, get the sender's address
+			InetAddress localAddress = InetAddress.getLocalHost(); // Get Host Address
+			// System.out.println(a);
 
-				InetAddress localAddress = InetAddress.getLocalHost(); // Get Host Address
-				// System.out.println(a);
+			srvSocket = new ServerSocket(0); // establish server socket by allocate a random port
 
-				srvSocket = new ServerSocket(0); // establish server socket by allocate a random port
-
-				// receive random port
-				tcpport = srvSocket.getLocalPort();
-				// tcpport = 8888;
-				System.out.println(tcpport);
-				msg = localAddress.getHostAddress() + ", " + tcpport; // get port
-				// socket = new DatagramSocket(4321);
-				DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), receivedPacket.getAddress(),
-						receivedPacket.getPort());
-				socket.send(packet);
-				System.out.println("Sent !!!");
-
-			}
-			socket.close();
-			// srvSocket.close();
-			return (true);
+			// receive random port
+			tcpport = srvSocket.getLocalPort();
+			// tcpport = 8888;
+			System.out.println(tcpport);
+			msg = localAddress.getHostAddress() + ", " + tcpport; // get port
+			// socket = new DatagramSocket(4321);
+			DatagramPacket packet = new DatagramPacket(msg.getBytes(), msg.length(), receivedPacket.getAddress(),
+					receivedPacket.getPort());
+			socket.send(packet);
+			System.out.println("Sent !!!");
 		}
+		socket.close();
+		// srvSocket.close();
+		return (true);
+
 	}
 
-	public void send(Socket clientSocket) throws IOException {
-		DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
+	public void receiveOption() {
+		try {
+			int size = 0;
+			size = in.read(optionBuffer);
+			option = new String(optionBuffer, 0, size);
 
-		for (int row = 0; row < 50; row++) {
-			for (int col = 0; col < 50; col++) {
-				// System.out.println("Pixel == "+data[row][col]);
-				if (data[row][col] != 0) {
-					out.writeBoolean(true);
-					out.writeInt(data[row][col]);
-					out.writeInt(col);
-					out.writeInt(row);
-					System.out.println("Successfully sent pixel!!!");
-				}
-
-			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 

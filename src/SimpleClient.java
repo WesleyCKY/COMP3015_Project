@@ -31,7 +31,7 @@ public class SimpleClient extends JFrame {
 	private UI ui = UI.getInstance();
 	private static JTextField textField = new JTextField();
 	private byte[] buffer = new byte[1024];
-	private byte[] studioBuffer;
+	private byte[] studioBuffer = new byte[1024];
 	private ArrayList<String> studio = new ArrayList<>(); // List of studios
 
 	public SimpleClient() throws IOException {
@@ -42,6 +42,7 @@ public class SimpleClient extends JFrame {
 		int count = 0;
 		int listSize = 0;
 		int nameSize = 0;
+		int len;
 
 		System.out.println("In receiveStudioList()...");
 
@@ -50,21 +51,22 @@ public class SimpleClient extends JFrame {
 			System.out.println("Received studio list size!!!");
 			System.out.println("Size: " + listSize);
 
-			System.out.println("in.available(): " + in.available());
-			while (in.available() > 0) {
-				nameSize = in.read(studioBuffer);
-				studio.add(new String(studioBuffer, 0, nameSize)); // Add new received studio to the list
-				count++;
-				System.out.println("Received studio!!!");
-				System.out.println("Already receive " + count);
-
+			while (listSize > 0) {
+				System.out.println("In list loop...");
+				len = in.readInt();
+				nameSize = in.read(studioBuffer, 0, len);
+				studio.add(new String(studioBuffer, 0, len)); // Add new received studio to the list
+				// count++;
+				listSize--;
+				System.out.println("Name Size: " + nameSize);
+				System.out.println("Received studio: " + new String(studioBuffer, 0, nameSize));
 			}
 
-			if (count == listSize) {
-				System.out.println("Receive studio list!!!");
-				return true;
-			} else
-				return false; // if received studio not equal to the expected size
+			// if (count == listSize) {
+			System.out.println("Receive studio list!!!");
+			return true;
+			// } else
+			// return false; // if received studio not equal to the expected size
 
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -113,6 +115,8 @@ public class SimpleClient extends JFrame {
 		socket.close();
 
 		establishTcp(); // establish TCP connection
+
+		studio();
 		// download(); // download sketch data
 		//
 		// Thread receiveDataThread = new Thread(() -> {
@@ -152,13 +156,13 @@ public class SimpleClient extends JFrame {
 	public static void send(int pixel, int col, int row) throws IOException {
 		// System.out.println("In send()...");
 		out.writeBoolean(true); // true if send pixel
-		// System.out.println(true);
+		System.out.println(true);
 		out.writeInt(pixel); // send pixel
-		// System.out.println("Sent Pixel!");
+		System.out.println("Sent Pixel!");
 		out.writeInt(col); // send pixel_col
-		// System.out.println("Sent Pixel Col!");
+		System.out.println("Sent Pixel Col!");
 		out.writeInt(row); // send pixel_row
-		// System.out.println("Sent Pixel Row!");
+		System.out.println("Sent Pixel Row!");
 	}
 
 	public static void send(LinkedList<Point> list, int pixel) throws IOException {
@@ -279,76 +283,94 @@ public class SimpleClient extends JFrame {
 				}
 
 				setVisible(false); // If submitted, close input name window
-
-				// ui = UI.getInstance(); // get the instance of UI
-				// ui.setData(new int[50][50], 20); // set the data array and block size.
-				// comment this statement to use the default data array and block size.
-
-				if (receiveStudioList()) {
-					JPanel panel = new JPanel(new GridLayout(studio.size() + 3, 0)); // use the size of list to
-																						// determine the number of
-																						// buttons in the panel, extra 3
-																						// for label, create studio
-																						// btn, and textfield
-					JLabel label = new JLabel("Please create or choose the studio");
-					JTextField text = new JTextField();
-					JButton create = new JButton("Create studio");
-
-					create.addActionListener(new ActionListener() {
-						public void actionPerformed(ActionEvent e) { // If clicked, send "create studio" TCP package
-							try {
-								out.write(("create " + text.getText()).getBytes());
-
-								panel.setVisible(false); // If created, close studio window
-								ui.setVisible(true);
-							} catch (IOException e1) {
-								// TODO Auto-generated catch block
-								e1.printStackTrace();
-							}
-						}
-					});
-
-					panel.add(label);
-					panel.add(text);
-					panel.add(create);
-
-					for (int i = 0; i < studio.size(); i++) {
-						JButton btn = new JButton(studio.get(i)); // Create buttons
-
-						btn.addActionListener(new ActionListener() { // Create actionListener for each button
-							public void actionPerformed(ActionEvent e) {
-
-								try {
-									out.write(("select " + btn.getText()).getBytes()); // If clicked, send a "select
-																						// studio" TCP package
-									// includes the name of studio
-									panel.setVisible(false); // If submitted, close choose studio window
-									ui.setVisible(true);
-
-								} catch (IOException e1) {
-									// TODO Auto-generated catch block
-									e1.printStackTrace();
-								}
-							}
-
-						});
-						panel.add(btn); // Add button to the panel
-					}
-
-					Thread receiveDataThread = new Thread(() -> {
-						receiveData();
-					});
-
-					receiveDataThread.start();
-
-				} else {
-					System.out.println("Error occurred! Size of list is not expected.");
-					System.exit(0);
-				}
-
-				// ui.setVisible(true);
-				// setVisible(false); // If submitted, close input name window
 			}
 		});
+		setVisible(true);
+		// ui = UI.getInstance(); // get the instance of UI
+		// ui.setData(new int[50][50], 20); // set the data array and block size.
+		// comment this statement to use the default data array and block size.
+
+		// ui.setVisible(true);
+		// setVisible(false); // If submitted, close input name window
+	}
+
+	public void studio() {
+
+		if (receiveStudioList()) {
+			JFrame frame = new JFrame();
+			frame.setVisible(true);
+			frame.setSize(200, 200);
+
+			frame.setLayout(new GridLayout(studio.size() + 3, 0));
+			// this.setSize(new Dimension(320, 240));
+			// Container container = this.getContentPane();
+			// container.setLayout(new GridLayout(studio.size() + 3, 0)); // use the size of
+			// list to
+			// // determine the number of
+			// // buttons in the panel, extra 3
+			// // for label, create studio
+			// // btn, and textfield
+			JLabel label1 = new JLabel("Please create or choose the studio");
+			JTextField text = new JTextField();
+			JButton create = new JButton("Create studio");
+
+			create.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) { // If clicked, send "create studio" TCP package
+					try {
+						out.write(("create " + text.getText()).getBytes());
+
+						frame.setVisible(false); // If created, close studio window
+						ui.setVisible(true);
+					} catch (IOException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+				}
+			});
+
+			frame.add(label1);
+			System.out.println("Added label");
+			frame.add(text);
+			System.out.println("Added text");
+			frame.add(create);
+			System.out.println("Added Create Button");
+
+			for (int i = 0; i < studio.size(); i++) {
+				JButton btn = new JButton(studio.get(i)); // Create buttons
+
+				btn.addActionListener(new ActionListener() { // Create actionListener for each button
+					public void actionPerformed(ActionEvent e) {
+
+						try {
+							out.write(("select " + btn.getText()).getBytes()); // If clicked, send a "select
+																				// studio" TCP package
+							// includes the name of studio
+							frame.setVisible(false); // If submitted, close choose studio window
+							ui.setVisible(true);
+
+						} catch (IOException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
+					}
+
+				});
+				frame.add(btn); // Add button to the panel
+				System.out.println("Studio Button");
+			}
+
+			// System.out.println(frame);
+			setVisible(true);
+
+			Thread receiveDataThread = new Thread(() -> {
+				receiveData();
+			});
+
+			receiveDataThread.start();
+
+		} else {
+			System.out.println("Error occurred! Size of list is not expected.");
+			System.exit(0);
+		}
 	}
 }

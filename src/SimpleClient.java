@@ -54,12 +54,15 @@ public class SimpleClient extends JFrame {
 			while (listSize > 0) {
 				System.out.println("In list loop...");
 				len = in.readInt();
-				nameSize = in.read(studioBuffer, 0, len);
+				System.out.println("Received length: " + len);
+				
+				in.read(studioBuffer, 0, len);
+				System.out.println("Received studioName: " + new String(studioBuffer, 0, len));
 				studio.add(new String(studioBuffer, 0, len)); // Add new received studio to the list
+				
 				// count++;
 				listSize--;
-				System.out.println("Name Size: " + nameSize);
-				System.out.println("Received studio: " + new String(studioBuffer, 0, nameSize));
+				System.out.println("Received studio: " + new String(studioBuffer, 0, len));
 			}
 
 			// if (count == listSize) {
@@ -299,9 +302,9 @@ public class SimpleClient extends JFrame {
 		if (receiveStudioList()) {
 			JFrame frame = new JFrame();
 			frame.setVisible(true);
-			frame.setSize(200, 200);
+			frame.setSize(300, 300);
 
-			frame.setLayout(new GridLayout(studio.size() + 3, 0));
+			frame.setLayout(new GridLayout(studio.size() + 5, 0));
 			// this.setSize(new Dimension(320, 240));
 			// Container container = this.getContentPane();
 			// container.setLayout(new GridLayout(studio.size() + 3, 0)); // use the size of
@@ -310,9 +313,12 @@ public class SimpleClient extends JFrame {
 			// // buttons in the panel, extra 3
 			// // for label, create studio
 			// // btn, and textfield
-			JLabel label1 = new JLabel("Please create or choose the studio");
+			JLabel label1 = new JLabel("Please create or choose studios");
 			JTextField text = new JTextField();
 			JButton create = new JButton("Create studio");
+			
+			
+			JLabel label2 = new JLabel("Choose studios");
 
 			create.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) { // If clicked, send "create studio" TCP package
@@ -334,6 +340,8 @@ public class SimpleClient extends JFrame {
 			System.out.println("Added text");
 			frame.add(create);
 			System.out.println("Added Create Button");
+			frame.add(add(new JSeparator(SwingConstants.HORIZONTAL)));
+			frame.add(label2);
 
 			for (int i = 0; i < studio.size(); i++) {
 				JButton btn = new JButton(studio.get(i)); // Create buttons

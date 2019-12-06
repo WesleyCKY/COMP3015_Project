@@ -306,7 +306,7 @@ public class SimpleClient extends JFrame {
 			frame.setVisible(true);
 			frame.setSize(300, 300);
 
-			frame.setLayout(new GridLayout(studio.size() + 9, 0));
+			frame.setLayout(new GridLayout(studio.size() + 8, 0));
 			// this.setSize(new Dimension(320, 240));
 			// Container container = this.getContentPane();
 			// container.setLayout(new GridLayout(studio.size() + 3, 0)); // use the size of
@@ -374,7 +374,7 @@ public class SimpleClient extends JFrame {
 
 			frame.add(create);
 			System.out.println("Added Create Button");
-			frame.add(add(new JSeparator(SwingConstants.HORIZONTAL)));
+//			frame.add(add(new JSeparator(SwingConstants.HORIZONTAL)));
 			frame.add(label2);
 
 			for (int i = 0; i < studio.size(); i++) {
@@ -384,8 +384,19 @@ public class SimpleClient extends JFrame {
 					public void actionPerformed(ActionEvent e) {
 
 						try {
+							int col;
+							int row;
+							
 							out.write(("select " + btn.getText()).getBytes()); // If clicked, send a "select
 																				// studio" TCP package
+							col = in.readInt();
+							row = in.readInt();
+							
+							System.out.println("In select, receive col: "+col);
+							System.out.println("In select, receive row: "+row);
+							
+							ui = UI.getInstance(col, row);
+							
 							// includes the name of studio
 							frame.setVisible(false); // If submitted, close choose studio window
 							ui.setVisible(true);

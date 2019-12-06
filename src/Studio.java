@@ -10,41 +10,26 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 public class Studio {
-	int tcpport = 0; // server port
-	int udpport = 1234; //
+//	int tcpport = 0; // server port
+//	int udpport = 1234; //
 	// private Socket clientSocket;
 	byte[] buffer = new byte[1024];
-	// DataInputStream in;
-	// DataOutputStream out;
+
 	int[][] data = new int[50][50];
 	String msg; // msg that will be returned to the client
 	DatagramSocket socket;
-	// DatagramPacket receivedPacket;
+
 	ServerSocket srvSocket;
 	ArrayList<Socket> clist = new ArrayList<Socket>();
-	DataInputStream in;
-	DataOutputStream out;
+	
 	Socket clientSocket;
 	String studioName;
 
-	public Studio(String studioName, DataInputStream in, DataOutputStream out, Socket clientSocket) throws IOException {
+	public Studio(String studioName) throws IOException {
 		this.studioName = studioName;
-		this.in = in;
-		this.out = out;
-
-		// srvSocket = new ServerSocket(tcpport);
-
-		// while (true) {
-		// main thread for controlling connection
-
 	}
 
-	// establish a UDP connection
-	// udpConnect();
-	// socket.close();
-
-	// accept connection
-	public void handleClient() {
+	public void handleClient(Socket clientSocket) {
 		System.out.println("Making thread...");
 		synchronized (clist) {
 			clist.add(clientSocket);
@@ -67,35 +52,24 @@ public class Studio {
 		t.start();
 	}
 
-//	public void receiveSocket() {
-//	}
-
 	public void tcpConnect(Socket clientSocket) throws IOException {
 		System.out.println("In tcpConnect()...");
-		// srvSocket = new ServerSocket(tcpport);
-
-		// clientSocket = srvSocket.accept();
-		System.out.println("Waiting...");
-		// establish a TCP connection
-
-		System.out.printf("TCP server is listening at port %d...", tcpport);
-
 		System.out.println("Accepted!");
-
 		send(clientSocket); // call send default sketch
-
 		receive(clientSocket);
 	}
 
 	public void receive(Socket clientSocket) throws IOException { // send color pixels
 		try {
-
+			DataInputStream in = new DataInputStream(clientSocket.getInputStream()); // each time set up the client
+			DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream()); // create new input and output stream
 			while (true) {
 				boolean b = in.readBoolean();
+				System.out.println("Read in the boolean : " + b);
 				if (!b) {
 					int len = in.readInt();
 					in.read(buffer, 0, len);
-					System.out.println("message:"+ new String(buffer, 0, len) );
+					System.out.println("message: " + new String(buffer, 0, len));
 					for (Socket s : clist) {
 						if (s != clientSocket) { // not send differential update to clientSocket itself
 							DataOutputStream sout = new DataOutputStream(s.getOutputStream());
@@ -154,6 +128,7 @@ public class Studio {
 	}
 
 	public void send(Socket clientSocket) throws IOException {
+		DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream()); 
 		for (int row = 0; row < 50; row++) {
 			for (int col = 0; col < 50; col++) {
 				if (data[row][col] != 0) {

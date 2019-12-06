@@ -69,11 +69,12 @@ public class SimpleServer {
 					out.writeInt(studiolist.size());
 					System.out.println("Studio list size sent!");
 					// sending names of
+					System.out.println("the list: " + studiolist);
 					for (Studio studio : studiolist) {
-						System.out.println("the length of name is :"+studio.getName().length());
+						System.out.println("the length of name is :" + studio.getName().length());
 						out.writeInt(studio.getName().length());
 						out.write(studio.getName().getBytes());
-						System.out.println("The list of studio: "); 
+						System.out.println("The list of studio: ");
 						System.out.println(studio.getName());
 					}
 				} catch (IOException e) {
@@ -88,7 +89,8 @@ public class SimpleServer {
 						if (option.contains("create")) {
 							studioName = option.substring(7); // get the Studio title
 							System.out.println("The name of the studio: " + studioName);
-							Studio studio = new Studio(studioName, in, out, clientSocket); // handle clients in each
+							Studio studio = new Studio(studioName); // handle clients in each
+							System.out.println("studio.getName():" + studio.getName());
 							System.out.println("New Studio created!");
 							synchronized (studiolist) {
 								studiolist.add(studio);
@@ -98,18 +100,18 @@ public class SimpleServer {
 									System.out.println(s.getName());
 								}
 							}
-							studio.handleClient();
+							studio.handleClient(clientSocket);
 						} else if (option.contains("select")) {
 							studioName = option.substring(7); // get the Studio title
 							System.out.println("The selected studio: " + studioName);
-							for(Studio studio: studiolist) {
-								if(studio.getName().equals(studioName)) {
+							for (Studio studio : studiolist) {
+								if (studio.getName().equals(studioName)) {
 									System.out.println("The Studio name found!");
-									studio.handleClient();
+
+									studio.handleClient(clientSocket);
 								}
-								
+
 							}
-							
 
 						}
 					} catch (IOException e1) {
@@ -170,7 +172,7 @@ public class SimpleServer {
 
 	}
 
-	public void receiveOption(){ // capture the option from user
+	public void receiveOption() { // capture the option from user
 		try {
 			int size = 0;
 			size = in.read(optionBuffer);

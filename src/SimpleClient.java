@@ -28,11 +28,13 @@ public class SimpleClient extends JFrame {
 	private static DataInputStream in; // InputStream used for receiving the data sent by server
 	private int[][] downloadedSketchData;
 	private String name;
-	private UI ui = UI.getInstance();
+	private UI ui;
 	private static JTextField textField = new JTextField();
 	private byte[] buffer = new byte[1024];
 	private byte[] studioBuffer = new byte[1024];
 	private ArrayList<String> studio = new ArrayList<>(); // List of studios
+	private int numCol = 50; // default size
+	private int numRow = 50; 
 
 	public SimpleClient() throws IOException {
 		inputName(); // Input name window
@@ -304,7 +306,7 @@ public class SimpleClient extends JFrame {
 			frame.setVisible(true);
 			frame.setSize(300, 300);
 
-			frame.setLayout(new GridLayout(studio.size() + 5, 0));
+			frame.setLayout(new GridLayout(studio.size() + 9, 0));
 			// this.setSize(new Dimension(320, 240));
 			// Container container = this.getContentPane();
 			// container.setLayout(new GridLayout(studio.size() + 3, 0)); // use the size of
@@ -316,20 +318,47 @@ public class SimpleClient extends JFrame {
 			JLabel label1 = new JLabel("Please create or choose studios");
 			JTextField text = new JTextField();
 			JButton create = new JButton("Create studio");
-			
+			JLabel row = new JLabel("Please input the number of rows");
+			JLabel col = new JLabel("Please input the number of columns");
+			JTextField numRow = new JTextField();
+			JTextField numCol = new JTextField();
 			
 			JLabel label2 = new JLabel("Choose studios");
 
 			create.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) { // If clicked, send "create studio" TCP package
 					try {
+						int col = Integer.parseInt(numCol.getText());
+						int row = Integer.parseInt(numRow.getText());
+						
 						out.write(("create " + text.getText()).getBytes());
-
+						out.writeInt(col);
+						out.writeInt(row);
+						
+						ui = UI.getInstance(col, row);
+						
 						frame.setVisible(false); // If created, close studio window
 						ui.setVisible(true);
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
+					} catch (NumberFormatException e1) {
+						
+						try {
+							out.write(("create " + text.getText()).getBytes());
+							out.writeInt(50);
+							out.writeInt(50);
+							
+						} catch (IOException e2) {
+							// TODO Auto-generated catch block
+							e2.printStackTrace();
+						}
+							
+						ui = UI.getInstance(50, 50);
+						
+						frame.setVisible(false); // If created, close studio window
+						ui.setVisible(true);
+						
 					}
 				}
 			});
@@ -338,6 +367,11 @@ public class SimpleClient extends JFrame {
 			System.out.println("Added label");
 			frame.add(text);
 			System.out.println("Added text");
+			frame.add(row);
+			frame.add(numRow);
+			frame.add(col);
+			frame.add(numCol);
+
 			frame.add(create);
 			System.out.println("Added Create Button");
 			frame.add(add(new JSeparator(SwingConstants.HORIZONTAL)));

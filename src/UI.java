@@ -57,6 +57,9 @@ public class UI extends JFrame {
 	private static UI instance;
 	private int selectedColor = -543230; // golden
 
+	private int numCol = 50;
+	private int numRow = 50;
+	
 	private int[][] data = new int[50][50]; // pixel color data array
 
 	int blockSize = 16;
@@ -67,9 +70,9 @@ public class UI extends JFrame {
 	 * 
 	 * @return
 	 */
-	public static UI getInstance() {
+	public static UI getInstance(int numCol, int numRow) {
 		if (instance == null)
-			instance = new UI();
+			instance = new UI(numCol, numRow);
 
 		return instance;
 	}
@@ -78,7 +81,15 @@ public class UI extends JFrame {
 	 * private constructor. To create an instance of UI, call UI.getInstance()
 	 * instead.
 	 */
-	private UI() {
+	private UI(int numCol, int numRow) {
+		this.numCol = numCol;
+		this.numRow = numRow;
+		
+		System.out.println("Number of column: "+this.numCol);
+		System.out.println("Number of row: "+this.numRow);
+		
+		data = new int[numCol][numRow];
+		
 		setTitle("KidPaint");
 
 		JPanel basePanel = new JPanel();
@@ -191,7 +202,7 @@ public class UI extends JFrame {
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				ColorPicker picker = ColorPicker.getInstance(UI.instance);
+				ColorPicker picker = ColorPicker.getInstance(UI.instance, numCol, numRow);
 				Point location = pnlColorPicker.getLocationOnScreen();
 				location.y += pnlColorPicker.getHeight();
 				picker.setLocation(location);

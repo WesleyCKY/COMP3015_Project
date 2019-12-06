@@ -13,7 +13,8 @@ public class Studio {
 
 	byte[] buffer = new byte[1024];
 
-	int[][] data = new int[50][50];
+	// int[][] data = new int[50][50];
+  int[][] data;
 	String msg; // msg that will be returned to the client
 	DatagramSocket socket;
 
@@ -22,10 +23,15 @@ public class Studio {
 	
 	Socket clientSocket;
 	String studioName;
-
-	public Studio(String studioName) throws IOException {
+	int row;
+	int col;
+	
+	public Studio(String studioName, int col, int row) throws IOException {
 		this.studioName = studioName;
-	}
+		this.col = col;
+		this.row = row;
+    this.data = new int[col][row];
+  }
 
 	public void handleClient(Socket clientSocket) {
 		System.out.println("Making thread...");
@@ -43,7 +49,7 @@ public class Studio {
 				e.printStackTrace();
 			}
 			synchronized (clist) {
-				System.out.println("Remove already!!!" + clientSocket.getPort());
+				System.out.println("Removed already!!!" + clientSocket.getPort());
 				clist.remove(clientSocket);
 			}
 		});
@@ -127,13 +133,13 @@ public class Studio {
 
 	public void send(Socket clientSocket) throws IOException {
 		DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream()); 
-		for (int row = 0; row < 50; row++) {
-			for (int col = 0; col < 50; col++) {
-				if (data[row][col] != 0) {
+		for (int r = 0; r < row; r++) {
+			for (int c = 0; c < col; c++) {
+				if (data[c][r] != 0) {
 					out.writeBoolean(true);
-					out.writeInt(data[row][col]);
-					out.writeInt(col);
-					out.writeInt(row);
+					out.writeInt(data[c][r]);
+					out.writeInt(c);
+					out.writeInt(r);
 					System.out.println("Successfully sent pixel!!!");
 				}
 
@@ -144,5 +150,13 @@ public class Studio {
 	public String getName() {
 		return studioName;
 	}
+	
+	public int returnCol() {
+		return col;
+	}
+	public int returnRow() {
+		return row;
+	}
+	
 
 }

@@ -32,6 +32,8 @@ public class SimpleServer {
 	DataInputStream in;
 	DataOutputStream out;
 	byte[] optionBuffer = new byte[1024];
+  int col;
+  int row;
 
 	public static void main(String[] args) throws IOException {
 		// SimpleServer s;
@@ -87,9 +89,10 @@ public class SimpleServer {
 					try {
 						receiveOption();
 						if (option.contains("create")) {
+              System.out.println("Choose create!");
 							studioName = option.substring(7); // get the Studio title
 							System.out.println("The name of the studio: " + studioName);
-							Studio studio = new Studio(studioName); // handle clients in each
+							Studio studio = new Studio(studioName, col, row); // handle clients in each
 							System.out.println("studio.getName():" + studio.getName());
 							System.out.println("New Studio created!");
 							synchronized (studiolist) {
@@ -103,12 +106,14 @@ public class SimpleServer {
 							}
 							studio.handleClient(clientSocket);
 						} else if (option.contains("select")) {
+              System.out.println("Choose selelct!");
 							studioName = option.substring(7); // get the Studio title
 							System.out.println("The selected studio: " + studioName);
 							for (Studio studio : studiolist) {
 								if (studio.getName().equals(studioName)) {
 									System.out.println("The Studio name found!");
-
+									out.writeInt(studio.returnCol());
+									out.writeInt(studio.returnRow());
 									studio.handleClient(clientSocket);
 								}
 
@@ -174,12 +179,16 @@ public class SimpleServer {
 	}
 
 	public void receiveOption() { // capture the option from user
+    System.out.println("In receiveOption()...");
 		try {
 			int size = 0;
 			size = in.read(optionBuffer);
 			option = new String(optionBuffer, 0, size);
-			int row = 0;
-			int col = 0;
+			System.out.println("Option: "+ option);
+			 if(option.contains("select")) {
+				 return;
+			 }
+			
 			col = in.readInt();
 			row = in.readInt();
 			System.out.println("The Size of the new Studio col:"+ col+ ", row : " + row);

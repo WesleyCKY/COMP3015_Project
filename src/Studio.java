@@ -10,9 +10,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 public class Studio {
-//	int tcpport = 0; // server port
-//	int udpport = 1234; //
-	// private Socket clientSocket;
+
 	byte[] buffer = new byte[1024];
 
 	int[][] data = new int[50][50];

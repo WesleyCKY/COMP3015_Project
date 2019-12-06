@@ -19,7 +19,7 @@ public class SimpleServer {
 	byte[] buffer = new byte[1024];
 	// DataInputStream in;
 	// DataOutputStream out;
-	int[][] data = new int[50][50];
+	int[][] data;
 	String msg; // msg that will be returned to the client
 	DatagramSocket socket;
 	// DatagramPacket receivedPacket;
@@ -95,8 +95,9 @@ public class SimpleServer {
 							synchronized (studiolist) {
 								studiolist.add(studio);
 								System.out.printf("Total %d studios are created!", studiolist.size());
+								System.out.println();
 								for (Studio s : studiolist) {
-									System.out.println("Elemnts in stuio list: ");
+									System.out.println("Elemnts in studio list: ");
 									System.out.println(s.getName());
 								}
 							}
@@ -177,7 +178,12 @@ public class SimpleServer {
 			int size = 0;
 			size = in.read(optionBuffer);
 			option = new String(optionBuffer, 0, size);
-
+			int row = 0;
+			int col = 0;
+			col = in.readInt();
+			row = in.readInt();
+			System.out.println("The Size of the new Studio col:"+ col+ ", row : " + row);
+			data = new int[col][row];
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

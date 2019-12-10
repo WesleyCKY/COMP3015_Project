@@ -207,7 +207,7 @@ public class SimpleClient extends JFrame {
 
 				int pixel;
 				int col;
-				int row;
+				int row;			
 
 				if (in.readBoolean()) { // if pixel, return true
 
@@ -228,7 +228,7 @@ public class SimpleClient extends JFrame {
 					int len = in.readInt();
 					in.read(buffer, 0, len);
 
-					// System.out.println(new String(buffer, 0, len) + "\n");
+					System.out.println(new String(buffer, 0, len) + "\n");
 
 					ui.onTextInputted(new String(buffer, 0, len));
 				}
@@ -339,6 +339,13 @@ public class SimpleClient extends JFrame {
 						
 						frame.setVisible(false); // If created, close studio window
 						ui.setVisible(true);
+						
+						Thread receiveDataThread = new Thread(() -> {
+							receiveData();
+						});
+
+						receiveDataThread.start();
+						
 					} catch (IOException e1) {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
@@ -358,6 +365,12 @@ public class SimpleClient extends JFrame {
 						
 						frame.setVisible(false); // If created, close studio window
 						ui.setVisible(true);
+						
+						Thread receiveDataThread = new Thread(() -> {
+							receiveData();
+						});
+
+						receiveDataThread.start();
 						
 					}
 				}
@@ -384,13 +397,17 @@ public class SimpleClient extends JFrame {
 					public void actionPerformed(ActionEvent e) {
 
 						try {
+							System.out.println("In select studio...");
+							
 							int col;
 							int row;
 							
 							out.write(("select " + btn.getText()).getBytes()); // If clicked, send a "select
 																				// studio" TCP package
 							col = in.readInt();
+							System.out.println("Received col: "+ col);
 							row = in.readInt();
+							System.out.println("Received row: "+row);
 							
 							System.out.println("In select, receive col: "+col);
 							System.out.println("In select, receive row: "+row);
@@ -400,6 +417,12 @@ public class SimpleClient extends JFrame {
 							// includes the name of studio
 							frame.setVisible(false); // If submitted, close choose studio window
 							ui.setVisible(true);
+							
+							Thread receiveDataThread = new Thread(() -> {
+								receiveData();
+							});
+
+							receiveDataThread.start();
 
 						} catch (IOException e1) {
 							// TODO Auto-generated catch block
@@ -415,11 +438,11 @@ public class SimpleClient extends JFrame {
 			// System.out.println(frame);
 			setVisible(true);
 
-			Thread receiveDataThread = new Thread(() -> {
-				receiveData();
-			});
-
-			receiveDataThread.start();
+//			Thread receiveDataThread = new Thread(() -> {
+//				receiveData();
+//			});
+//
+//			receiveDataThread.start();
 
 		} else {
 			System.out.println("Error occurred! Size of list is not expected.");

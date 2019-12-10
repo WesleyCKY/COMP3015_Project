@@ -32,9 +32,10 @@ public class SimpleServer {
 	DataInputStream in;
 	DataOutputStream out;
 	byte[] optionBuffer = new byte[1024];
-  int col;
-  int row;
-
+	int col;
+	int row;
+	byte[] echoBuffer = new byte [1024];
+	
 	public static void main(String[] args) throws IOException {
 		// SimpleServer s;
 		// boolean established;
@@ -78,6 +79,7 @@ public class SimpleServer {
 						out.write(studio.getName().getBytes());
 						System.out.println("The list of studio: ");
 						System.out.println(studio.getName());
+						
 					}
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -87,9 +89,8 @@ public class SimpleServer {
 				Thread t = new Thread(() -> { // establish a new studio thread
 					// cases
 					try {
-						receiveOption();
-						if (option.contains("create")) {
-              System.out.println("Choose create!");
+						if (receiveOption()) {
+							System.out.println("Choose create!");
 							studioName = option.substring(7); // get the Studio title
 							System.out.println("The name of the studio: " + studioName);
 							Studio studio = new Studio(studioName, col, row); // handle clients in each
@@ -105,16 +106,21 @@ public class SimpleServer {
 								}
 							}
 							studio.handleClient(clientSocket);
-						} else if (option.contains("select")) {
-              System.out.println("Choose selelct!");
+						} else {
+							System.out.println("Choose selelct!");
 							studioName = option.substring(7); // get the Studio title
 							System.out.println("The selected studio: " + studioName);
 							for (Studio studio : studiolist) {
 								if (studio.getName().equals(studioName)) {
-									System.out.println("The Studio name found!");
+									System.out.println("The Studio name is found!");
 									out.writeInt(studio.returnCol());
+									System.out.println("Confirm the col: "+studio.returnCol());
+									System.out.println("Sent col");
 									out.writeInt(studio.returnRow());
+									System.out.println("Confirm the row: "+studio.returnRow());
+									System.out.println("Sent row");
 									studio.handleClient(clientSocket);
+									System.out.println("Handled client");
 								}
 
 							}
@@ -178,25 +184,28 @@ public class SimpleServer {
 
 	}
 
-	public void receiveOption() { // capture the option from user
-    System.out.println("In receiveOption()...");
+	public boolean receiveOption() { // capture the option from user
+		System.out.println("In receiveOption()...");
 		try {
 			int size = 0;
 			size = in.read(optionBuffer);
 			option = new String(optionBuffer, 0, size);
-			System.out.println("Option: "+ option);
-			 if(option.contains("select")) {
-				 return;
-			 }
-			
+			System.out.println("Option: " + option);
+			if (option.contains("select")) {
+				System.out.println("Confirm select");
+				return false;
+			}
+//create new 
 			col = in.readInt();
 			row = in.readInt();
-			System.out.println("The Size of the new Studio col:"+ col+ ", row : " + row);
+			System.out.println("The Size of the new Studio col:" + col + ", row : " + row);
 			data = new int[col][row];
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return true;
 	}
 
 }

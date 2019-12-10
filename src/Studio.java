@@ -14,26 +14,27 @@ public class Studio {
 	byte[] buffer = new byte[1024];
 
 	// int[][] data = new int[50][50];
-  int[][] data;
+	int[][] data;
 	String msg; // msg that will be returned to the client
 	DatagramSocket socket;
 
 	ServerSocket srvSocket;
 	ArrayList<Socket> clist = new ArrayList<Socket>();
-	
+
 	Socket clientSocket;
 	String studioName;
-	int row;
 	int col;
-	
+	int row;
+
 	public Studio(String studioName, int col, int row) throws IOException {
 		this.studioName = studioName;
 		this.col = col;
 		this.row = row;
-    this.data = new int[col][row];
-  }
+		this.data = new int[col][row];
+	}
 
-	public void handleClient(Socket clientSocket) {
+	public void handleCreater(Socket clientSocket) {
+		System.out.println("In handleCreater...");
 		System.out.println("Making thread...");
 		synchronized (clist) {
 			clist.add(clientSocket);
@@ -41,9 +42,9 @@ public class Studio {
 		}
 
 		Thread t = new Thread(() -> { // establish a new thread
-			System.out.println("Calling tcpConnect()...");
+			System.out.println("Calling create()...");
 			try {
-				tcpConnect(clientSocket);
+				create(clientSocket);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -56,8 +57,39 @@ public class Studio {
 		t.start();
 	}
 
-	public void tcpConnect(Socket clientSocket) throws IOException {
-		System.out.println("In tcpConnect()...");
+	public void handleClient(Socket clientSocket) {
+		System.out.println("In handleClient...");
+		System.out.println("Making thread...");
+		synchronized (clist) {
+			clist.add(clientSocket);
+			System.out.printf("Total %d clients are connected!", clist.size());
+		}
+
+		Thread t = new Thread(() -> { // establish a new thread
+			System.out.println("Calling select()...");
+			try {
+				select(clientSocket);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			synchronized (clist) {
+				System.out.println("Removed already!!!" + clientSocket.getPort());
+				clist.remove(clientSocket);
+			}
+		});
+		t.start();
+	}
+
+	public void create(Socket clientSocket) throws IOException {
+		System.out.println("In crate method...");
+		System.out.println("Accepted!");
+		// send(clientSocket); // call send default sketch
+		receive(clientSocket);
+	}
+
+	public void select(Socket clientSocket) throws IOException {
+		System.out.println("In select method...");
 		System.out.println("Accepted!");
 		send(clientSocket); // call send default sketch
 		receive(clientSocket);
@@ -66,7 +98,8 @@ public class Studio {
 	public void receive(Socket clientSocket) throws IOException { // send color pixels
 		try {
 			DataInputStream in = new DataInputStream(clientSocket.getInputStream()); // each time set up the client
-			DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream()); // create new input and output stream
+			DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream()); // create new input and output
+																							// stream
 			while (true) {
 				boolean b = in.readBoolean();
 				System.out.println("Read in the boolean : " + b);
@@ -91,13 +124,13 @@ public class Studio {
 					int pix = in.readInt(); // receive a pix
 					System.out.println("In SimpleServer receive(), Pixel: " + pix);
 
-					int col = in.readInt();
-					System.out.println("In SimpleServer receive(), Col: " + col);
+					int pixCol = in.readInt();
+					System.out.println("In SimpleServer receive(), Col: " + pixCol);
 
-					int row = in.readInt();
-					System.out.println("In SimpleServer receive(), Row: " + row);
+					int pixRow = in.readInt();
+					System.out.println("In SimpleServer receive(), Row: " + pixRow);
 
-					data[row][col] = pix;
+					data[pixCol][pixRow] = pix;
 
 					System.out.println("clientSocketList length: " + clist.size());
 
@@ -113,10 +146,10 @@ public class Studio {
 												// and
 												// sending
 							System.out.println("Sent pixel successfully, Pixel: " + pix);
-							sout.writeInt(col);
-							System.out.println("Sent col successfully, col: " + col);
-							sout.writeInt(row);
-							System.out.println("Sent row successfully row: " + row);
+							sout.writeInt(pixCol);
+							System.out.println("Sent col successfully, col: " + pixCol);
+							sout.writeInt(pixRow);
+							System.out.println("Sent row successfully row: " + pixRow);
 
 						}
 					}
@@ -131,8 +164,8 @@ public class Studio {
 
 	}
 
-	public void send(Socket clientSocket) throws IOException {
-		DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream()); 
+	public void send(Socket clientSocket) throws IOException { // send default pixel
+		DataOutputStream out = new DataOutputStream(clientSocket.getOutputStream());
 		for (int r = 0; r < row; r++) {
 			for (int c = 0; c < col; c++) {
 				if (data[c][r] != 0) {
@@ -140,7 +173,7 @@ public class Studio {
 					out.writeInt(data[c][r]);
 					out.writeInt(c);
 					out.writeInt(r);
-					System.out.println("Successfully sent pixel!!!");
+					System.out.println("Successfully sent a pixel!!!");
 				}
 
 			}
@@ -150,13 +183,15 @@ public class Studio {
 	public String getName() {
 		return studioName;
 	}
-	
+
 	public int returnCol() {
+		System.out.println("The col: " + col);
 		return col;
 	}
+
 	public int returnRow() {
+		System.out.println("The row: " + row);
 		return row;
 	}
-	
 
 }

@@ -517,8 +517,8 @@ public class UI extends JFrame {
 
 			System.out.println("Saving...");
 			
-			for (int col = 0; col < 50; col++) {
-				for (int row = 0; row < 50; row++) {
+			for (int col = 0; col < numCol; col++) {
+				for (int row = 0; row < numRow; row++) {
 					out.writeInt(data[col][row]);
 					System.out.println("Column: "+col+", Row: "+row);
 				}
@@ -543,8 +543,8 @@ public class UI extends JFrame {
 			
 			System.out.println("Importing...");
 
-			for (int col = 0; col < 50; col++) {
-				for (int row = 0; row < 50; row++) {
+			for (int col = 0; col < numCol; col++) {
+				for (int row = 0; row < numRow; row++) {
 					value = in.readInt();
 					selectColor(value);
 					System.out.println("Column: "+col+", Row: "+row);
@@ -566,8 +566,8 @@ public class UI extends JFrame {
 
 	public void clearPixels() {
 		int value = 0;
-		for (int col = 0; col < 50; col++) {
-			for (int row = 0; row < 50; row++) {
+		for (int col = 0; col < numCol; col++) {
+			for (int row = 0; row < numRow; row++) {
 				selectColor(value);
 //				System.out.println("!!!!!!!Pixel: " + value);
 				paintPixel(col, row);

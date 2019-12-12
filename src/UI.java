@@ -70,9 +70,9 @@ public class UI extends JFrame {
 	 * 
 	 * @return
 	 */
-	public static UI getInstance(int numCol, int numRow) {
+	public static UI getInstance(int numCol, int numRow, String name) {
 		if (instance == null)
-			instance = new UI(numCol, numRow);
+			instance = new UI(numCol, numRow, name);
 
 		return instance;
 	}
@@ -81,7 +81,7 @@ public class UI extends JFrame {
 	 * private constructor. To create an instance of UI, call UI.getInstance()
 	 * instead.
 	 */
-	private UI(int numCol, int numRow) {
+	private UI(int numCol, int numRow, String name) {
 		this.numCol = numCol;
 		this.numRow = numRow;
 		
@@ -90,7 +90,7 @@ public class UI extends JFrame {
 		
 		data = new int[numCol][numRow];
 		
-		setTitle("KidPaint");
+		setTitle(name);
 
 		JPanel basePanel = new JPanel();
 		getContentPane().add(basePanel, BorderLayout.CENTER);
@@ -202,7 +202,7 @@ public class UI extends JFrame {
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				ColorPicker picker = ColorPicker.getInstance(UI.instance, numCol, numRow);
+				ColorPicker picker = ColorPicker.getInstance(UI.instance, numCol, numRow, name);
 				Point location = pnlColorPicker.getLocationOnScreen();
 				location.y += pnlColorPicker.getHeight();
 				picker.setLocation(location);

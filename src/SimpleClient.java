@@ -335,7 +335,7 @@ public class SimpleClient extends JFrame {
 						out.writeInt(col);
 						out.writeInt(row);
 						
-						ui = UI.getInstance(col, row);
+						ui = UI.getInstance(col, row, text.getText());
 						
 						frame.setVisible(false); // If created, close studio window
 						ui.setVisible(true);
@@ -361,7 +361,7 @@ public class SimpleClient extends JFrame {
 							e2.printStackTrace();
 						}
 							
-						ui = UI.getInstance(50, 50);
+						ui = UI.getInstance(50, 50, text.getText());
 						
 						Thread receiveDataThread = new Thread(() -> {
 							receiveData();
@@ -412,7 +412,7 @@ public class SimpleClient extends JFrame {
 							System.out.println("In select, receive col: "+col);
 							System.out.println("In select, receive row: "+row);
 							
-							ui = UI.getInstance(col, row);
+							ui = UI.getInstance(col, row, btn.getText());
 							
 							Thread receiveDataThread = new Thread(() -> {
 								receiveData();

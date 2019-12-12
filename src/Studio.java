@@ -12,8 +12,6 @@ import java.util.ArrayList;
 public class Studio {
 
 	byte[] buffer = new byte[1024];
-
-	// int[][] data = new int[50][50];
 	int[][] data;
 	String msg; // msg that will be returned to the client
 	DatagramSocket socket;

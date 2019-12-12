@@ -1,3 +1,4 @@
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -88,8 +89,10 @@ public class SimpleServer {
 
 				Thread t = new Thread(() -> { // establish a new studio thread
 					// cases
+					
+					String option2 = receiveOption();
 					try {
-						if (receiveOption()) {
+						if (option2.equals("create")) {
 							System.out.println("Choose create!");
 							studioName = option.substring(7); // get the Studio title
 							System.out.println("The name of the studio: " + studioName);
@@ -106,7 +109,7 @@ public class SimpleServer {
 								}
 							}
 							studio.handleClient(clientSocket);
-						} else {
+						} else if(option2.equals("select")){
 							System.out.println("Choose selelct!");
 							studioName = option.substring(7); // get the Studio title
 							System.out.println("The selected studio: " + studioName);
@@ -131,10 +134,11 @@ public class SimpleServer {
 						// System.out.println("e1 Exception");
 						e1.printStackTrace();
 					}
-					synchronized (studiolist) {
-						// System.out.println("Remove already!!!" + clientSocket.getPort());
-						// slist.remove(clientSocket);
-					}
+//					synchronized (studiolist) {
+//						
+//						studiolist.remove(studio);
+//						System.out.println("Remove Studio");
+//					}
 				});
 				t.start();
 			}
@@ -184,7 +188,7 @@ public class SimpleServer {
 
 	}
 
-	public boolean receiveOption() { // capture the option from user
+	public String receiveOption() { // capture the option from user
 		System.out.println("In receiveOption()...");
 		try {
 			int size = 0;
@@ -193,7 +197,7 @@ public class SimpleServer {
 			System.out.println("Option: " + option);
 			if (option.contains("select")) {
 				System.out.println("Confirm select");
-				return false;
+				return "select";
 			}
 //create new 
 			col = in.readInt();
@@ -201,11 +205,12 @@ public class SimpleServer {
 			System.out.println("The Size of the new Studio col:" + col + ", row : " + row);
 			data = new int[col][row];
 			
+			return "create";
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return true;
+		return null;
 	}
 
 }

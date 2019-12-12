@@ -234,6 +234,11 @@ public class UI extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				String filename = JOptionPane.showInputDialog("Please input the name of file: ");
+				
+				if (filename == null) {
+					return;
+				}
+				
 				saveFile(filename);
 			}
 		});
@@ -517,6 +522,9 @@ public class UI extends JFrame {
 
 			System.out.println("Saving...");
 			
+			out.writeInt(numCol);
+			out.writeInt(numRow);
+			
 			for (int col = 0; col < numCol; col++) {
 				for (int row = 0; row < numRow; row++) {
 					out.writeInt(data[col][row]);
@@ -541,14 +549,26 @@ public class UI extends JFrame {
 			DataInputStream in = new DataInputStream(fin);
 			int value;
 			
+			int importCol;
+			int importRow;
+			
 			System.out.println("Importing...");
+			
+			importCol = in.readInt();
+			importRow = in.readInt();
 
-			for (int col = 0; col < numCol; col++) {
-				for (int row = 0; row < numRow; row++) {
+			for (int col = 0; col < importCol; col++) {
+				for (int row = 0; row < importRow; row++) {
 					value = in.readInt();
 					selectColor(value);
 					System.out.println("Column: "+col+", Row: "+row);
 					paintPixel(col, row);
+					
+					if(numCol <= col || numRow <= row) {
+						continue;
+					}
+					
+					System.out.println("Col: "+col+", Row: "+row);
 
 					send(value, col, row);
 				}

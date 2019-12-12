@@ -363,14 +363,14 @@ public class SimpleClient extends JFrame {
 							
 						ui = UI.getInstance(50, 50);
 						
-						frame.setVisible(false); // If created, close studio window
-						ui.setVisible(true);
-						
 						Thread receiveDataThread = new Thread(() -> {
 							receiveData();
 						});
 
 						receiveDataThread.start();
+						
+						frame.setVisible(false); // If created, close studio window
+						ui.setVisible(true);
 						
 					}
 				}
@@ -414,15 +414,15 @@ public class SimpleClient extends JFrame {
 							
 							ui = UI.getInstance(col, row);
 							
-							// includes the name of studio
-							frame.setVisible(false); // If submitted, close choose studio window
-							ui.setVisible(true);
-							
 							Thread receiveDataThread = new Thread(() -> {
 								receiveData();
 							});
 
 							receiveDataThread.start();
+							
+							// includes the name of studio
+							frame.setVisible(false); // If submitted, close choose studio window
+							ui.setVisible(true);
 
 						} catch (IOException e1) {
 							// TODO Auto-generated catch block

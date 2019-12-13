@@ -273,6 +273,8 @@ public class SimpleClient extends JFrame {
 		container.add(label);
 		container.add(textField);
 		container.add(submit);
+		
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
 
 		// Once submit name, activate the UI window
 		submit.addActionListener(new ActionListener() {
@@ -281,12 +283,12 @@ public class SimpleClient extends JFrame {
 				// System.out.println("Hi!" + textField.getText());
 				try {
 					udpConnection(textField.getText()); // Create new client once input the user name
-
+					
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-
+				
 				setVisible(false); // If submitted, close input name window
 			}
 		});
@@ -434,6 +436,9 @@ public class SimpleClient extends JFrame {
 				frame.add(btn); // Add button to the panel
 				System.out.println("Studio Button");
 			}
+			
+			frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
+			
 
 			// System.out.println(frame);
 			setVisible(true);

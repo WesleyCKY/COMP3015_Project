@@ -26,9 +26,9 @@ public class ColorPicker extends JDialog {
 	 * @param parent
 	 * @return
 	 */
-	public static ColorPicker getInstance(JFrame parent, int col, int row, String name) {
+	public static ColorPicker getInstance(JFrame parent, int col, int row, String name, String type, int blockSize) {
 		if (instance == null)
-			instance = new ColorPicker(parent, col, row, name);
+			instance = new ColorPicker(parent, col, row, name, type, blockSize);
 		return instance;
 	}
 	
@@ -36,7 +36,7 @@ public class ColorPicker extends JDialog {
 	 * private constructor. To create an instance of ColorPicker, call getInstance() instead. 
 	 * @param parent
 	 */
-	private ColorPicker(JFrame parent, int col, int row, String name) {
+	private ColorPicker(JFrame parent, int col, int row, String name, String type, int blockSize) {
 		super(parent, "Color Picker", true);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		
@@ -75,7 +75,7 @@ public class ColorPicker extends JDialog {
 			@Override public void mouseReleased(MouseEvent e) {
 				try {
 					selectedColor = colorImage.getRGB(e.getX(), e.getY());
-					UI.getInstance(col, row, name).selectColor(selectedColor); // parse the value of the color to UI.java through selectColor() method
+					UI.getInstance(col, row, name, type, blockSize).selectColor(selectedColor); // parse the value of the color to UI.java through selectColor() method
 				} catch (IndexOutOfBoundsException ex) { }
 			}
 		});

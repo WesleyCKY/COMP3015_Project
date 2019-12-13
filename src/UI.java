@@ -53,16 +53,19 @@ public class UI extends JFrame {
 	private JButton saveBtn; // button of saving
 	private JButton importBtn; // button of importing
 	private JButton clearBtn; // button of clearing all pixels
+	private JToggleButton eraserBtn;
 
 	private static UI instance;
 	private int selectedColor = -543230; // golden
 
 	private int numCol = 50;
 	private int numRow = 50;
-	
+
 	private int[][] data = new int[50][50]; // pixel color data array
 
-	int blockSize = 16;
+	int blockSize; // 8, 16, 32
+	private String type;
+
 	PaintMode paintMode = PaintMode.Pixel;
 
 	/**
@@ -70,9 +73,9 @@ public class UI extends JFrame {
 	 * 
 	 * @return
 	 */
-	public static UI getInstance(int numCol, int numRow, String name) {
+	public static UI getInstance(int numCol, int numRow, String name, String type, int blockSize) {
 		if (instance == null)
-			instance = new UI(numCol, numRow, name);
+			instance = new UI(numCol, numRow, name, type, blockSize);
 
 		return instance;
 	}
@@ -81,15 +84,17 @@ public class UI extends JFrame {
 	 * private constructor. To create an instance of UI, call UI.getInstance()
 	 * instead.
 	 */
-	private UI(int numCol, int numRow, String name) {
+	private UI(int numCol, int numRow, String name, String type, int blockSize) {
 		this.numCol = numCol;
 		this.numRow = numRow;
-		
-		System.out.println("Number of column: "+this.numCol);
-		System.out.println("Number of row: "+this.numRow);
-		
+		this.type = type;
+		this.blockSize = blockSize;
+
+		System.out.println("Number of column: " + this.numCol);
+		System.out.println("Number of row: " + this.numRow);
+
 		data = new int[numCol][numRow];
-		
+
 		setTitle(name);
 
 		JPanel basePanel = new JPanel();
@@ -118,9 +123,26 @@ public class UI extends JFrame {
 				for (int x = 0; x < data.length; x++) {
 					for (int y = 0; y < data[0].length; y++) {
 						g2.setColor(new Color(data[x][y])); // fill in color in circle
-						g2.fillArc(blockSize * x, blockSize * y, blockSize, blockSize, 0, 360);
-						g2.setColor(Color.darkGray); // draw the circles' boundaries
-						g2.drawArc(blockSize * x, blockSize * y, blockSize, blockSize, 0, 360);
+
+						if (type.equals("circle")) {
+							
+							g2.fillArc(blockSize * x, blockSize * y, blockSize, blockSize, 0, 360);
+							g2.setColor(Color.darkGray); // draw the circles' boundaries
+							g2.drawArc(blockSize * x, blockSize * y, blockSize, blockSize, 0, 360);
+							
+						} else if (type.equals("square")) {
+							
+							g2.fillRect(blockSize * x, blockSize * y, 15, 15);
+							g2.setColor(Color.darkGray); // draw the circles' boundaries
+							g2.drawRect(blockSize * x, blockSize * y, 15, 15);
+							
+						}
+
+						// g2.fillArc(blockSize * x, blockSize * y, blockSize, blockSize, 0, 360);
+						// g2.fillRect(blockSize * x, blockSize * y, 15, 15);
+						// g2.setColor(Color.darkGray); // draw the circles' boundaries
+						// g2.drawArc(blockSize * x, blockSize * y, blockSize, blockSize, 0, 360);
+						// g2.drawRect(blockSize * x, blockSize * y, 15, 15);
 					}
 				}
 			}
@@ -202,7 +224,7 @@ public class UI extends JFrame {
 
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				ColorPicker picker = ColorPicker.getInstance(UI.instance, numCol, numRow, name);
+				ColorPicker picker = ColorPicker.getInstance(UI.instance, numCol, numRow, name, type, blockSize);
 				Point location = pnlColorPicker.getLocationOnScreen();
 				location.y += pnlColorPicker.getHeight();
 				picker.setLocation(location);
@@ -219,6 +241,9 @@ public class UI extends JFrame {
 
 		tglBucket = new JToggleButton("Bucket");
 		toolPanel.add(tglBucket);
+		
+		eraserBtn = new  JToggleButton("Eraser");
+		toolPanel.add(eraserBtn);
 
 		saveBtn = new JButton("Save");
 		toolPanel.add(saveBtn);
@@ -234,11 +259,11 @@ public class UI extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				String filename = JOptionPane.showInputDialog("Please input the name of file: ");
-				
+
 				if (filename == null) {
 					return;
 				}
-				
+
 				saveFile(filename);
 			}
 		});
@@ -277,6 +302,7 @@ public class UI extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				tglPen.setSelected(true);
 				tglBucket.setSelected(false);
+				eraserBtn.setSelected(false);
 				paintMode = PaintMode.Pixel;
 			}
 		});
@@ -287,7 +313,19 @@ public class UI extends JFrame {
 			public void actionPerformed(ActionEvent arg0) {
 				tglPen.setSelected(false);
 				tglBucket.setSelected(true);
+				eraserBtn.setSelected(false);
 				paintMode = PaintMode.Area;
+			}
+		});
+		
+		eraserBtn.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				tglPen.setSelected(false);
+				tglBucket.setSelected(false);
+				eraserBtn.setSelected(true);
+				paintMode = PaintMode.Pixel;
+				setEraser();
 			}
 		});
 
@@ -349,7 +387,7 @@ public class UI extends JFrame {
 	 */
 	public void selectColor(int colorValue) { // choose a color from colorPicker
 
-//		System.out.println("Color Value: " + colorValue);
+		// System.out.println("Color Value: " + colorValue);
 		selectedColor = colorValue;
 		pnlColorPicker.setBackground(new Color(colorValue)); // set color's picker background
 
@@ -377,16 +415,16 @@ public class UI extends JFrame {
 
 		data[col][row] = selectedColor; // color of each pixel
 
-//		System.out.println("Selected Color: " + selectedColor);
-//		System.out.println(data[col][row]); // print pixel
-//		System.out.println(col + " " + row);
+		// System.out.println("Selected Color: " + selectedColor);
+		// System.out.println(data[col][row]); // print pixel
+		// System.out.println(col + " " + row);
 
 		paintPanel.repaint(col * blockSize, row * blockSize, blockSize, blockSize);
 		// send method send the changed pixel to SimpleServer class for performing
 		// differential updates
 		try {
 			StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
-//			System.out.println(stacktrace);
+			// System.out.println(stacktrace);
 			StackTraceElement e = stacktrace[2];
 			String methodName = e.getMethodName();
 
@@ -521,18 +559,17 @@ public class UI extends JFrame {
 			DataOutputStream out = new DataOutputStream(fout);
 
 			System.out.println("Saving...");
-			
+
 			out.writeInt(numCol);
 			out.writeInt(numRow);
-			
+
 			for (int col = 0; col < numCol; col++) {
 				for (int row = 0; row < numRow; row++) {
 					out.writeInt(data[col][row]);
-					System.out.println("Column: "+col+", Row: "+row);
+					System.out.println("Column: " + col + ", Row: " + row);
 				}
 			}
-			
-			
+
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -548,12 +585,12 @@ public class UI extends JFrame {
 			FileInputStream fin = new FileInputStream(file);
 			DataInputStream in = new DataInputStream(fin);
 			int value;
-			
+
 			int importCol;
 			int importRow;
-			
+
 			System.out.println("Importing...");
-			
+
 			importCol = in.readInt();
 			importRow = in.readInt();
 
@@ -561,14 +598,14 @@ public class UI extends JFrame {
 				for (int row = 0; row < importRow; row++) {
 					value = in.readInt();
 					selectColor(value);
-					System.out.println("Column: "+col+", Row: "+row);
+					System.out.println("Column: " + col + ", Row: " + row);
 					paintPixel(col, row);
-					
-					if(numCol <= col || numRow <= row) {
+
+					if (numCol <= col || numRow <= row) {
 						continue;
 					}
-					
-					System.out.println("Col: "+col+", Row: "+row);
+
+					System.out.println("Col: " + col + ", Row: " + row);
 
 					send(value, col, row);
 				}
@@ -589,9 +626,9 @@ public class UI extends JFrame {
 		for (int col = 0; col < numCol; col++) {
 			for (int row = 0; row < numRow; row++) {
 				selectColor(value);
-//				System.out.println("!!!!!!!Pixel: " + value);
+				// System.out.println("!!!!!!!Pixel: " + value);
 				paintPixel(col, row);
-				
+
 				try {
 					send(value, col, row);
 				} catch (IOException e) {
@@ -600,5 +637,9 @@ public class UI extends JFrame {
 				}
 			}
 		}
+	}
+	
+	public void setEraser() {
+		selectedColor = 0;
 	}
 }

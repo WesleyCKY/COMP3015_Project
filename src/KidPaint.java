@@ -1,19 +1,33 @@
-import java.net.*;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
 
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
+import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JRadioButton;
 import javax.swing.JTextField;
 
 //client
@@ -32,8 +46,29 @@ public class KidPaint extends JFrame {
 	private ArrayList<String> studio = new ArrayList<>(); // List of studios
 	private int numCol = 50; // default size
 	private int numRow = 50;
+	private int time = 1000 * 60 * 10;
+
+	private int blockSize;
+
+	private JRadioButton circle = new JRadioButton("Circle");
+	private JRadioButton square = new JRadioButton("Square");
+
+	private JRadioButton low = new JRadioButton("Low Resolution");
+	private JRadioButton med = new JRadioButton("Medium Resolution");
+	private JRadioButton high = new JRadioButton("High Resolution");
 
 	public KidPaint() throws IOException {
+
+		Timer timer = new Timer();
+
+		timer.schedule(new TimerTask() {
+			@Override
+			public void run() {
+				// Your database code here
+				System.exit(0);
+			}
+		}, time);
+
 		inputName(); // Input name window
 	}
 
@@ -303,9 +338,9 @@ public class KidPaint extends JFrame {
 		if (receiveStudioList()) {
 			JFrame frame = new JFrame();
 			frame.setVisible(true);
-			frame.setSize(300, 300);
+			frame.setSize(300, 600);
 
-			frame.setLayout(new GridLayout(studio.size() + 8, 0));
+			frame.setLayout(new GridLayout(studio.size() + 15, 0));
 			// this.setSize(new Dimension(320, 240));
 			// Container container = this.getContentPane();
 			// container.setLayout(new GridLayout(studio.size() + 3, 0)); // use the size of
@@ -321,6 +356,22 @@ public class KidPaint extends JFrame {
 			JLabel col = new JLabel("Please input the number of columns");
 			JTextField numRow = new JTextField();
 			JTextField numCol = new JTextField();
+
+			ButtonGroup group = new ButtonGroup();
+
+			group.add(circle);
+			group.add(square);
+
+			circle.setSelected(true);
+
+			ButtonGroup resBtnGroup = new ButtonGroup();
+			resBtnGroup.add(low);
+			resBtnGroup.add(med);
+			resBtnGroup.add(high);
+
+			med.setSelected(true);
+
+			JLabel type = new JLabel("Please choose the type of sketch");
 
 			JLabel label2 = new JLabel("Choose studios");
 
@@ -350,7 +401,24 @@ public class KidPaint extends JFrame {
 
 						createStudio(text.getText(), col, row);
 
-						ui = UI.getInstance(col, row, text.getText());
+						System.out.println("circle selected: " + circle.isSelected());
+						System.out.println("square selected: " + square.isSelected());
+
+						String type;
+
+						if (circle.isSelected())
+							type = "circle";
+						else
+							type = "square";
+
+						if (low.isSelected()) {
+							blockSize = 32;
+						} else if (high.isSelected()) {
+							blockSize = 8;
+						} else
+							blockSize = 16;
+
+						ui = UI.getInstance(col, row, text.getText(), type, blockSize);
 
 						frame.setVisible(false); // If created, close studio window
 						ui.setVisible(true);
@@ -378,9 +446,26 @@ public class KidPaint extends JFrame {
 							}
 						}
 
+						System.out.println("circle selected: " + circle.isSelected());
+						System.out.println("square selected: " + square.isSelected());
+
 						createStudio(text.getText(), 50, 50);
 
-						ui = UI.getInstance(50, 50, text.getText());
+						String type;
+
+						if (circle.isSelected())
+							type = "circle";
+						else
+							type = "square";
+
+						if (low.isSelected()) {
+							blockSize = 32;
+						} else if (high.isSelected()) {
+							blockSize = 8;
+						} else
+							blockSize = 16;
+
+						ui = UI.getInstance(50, 50, text.getText(), type, blockSize);
 
 						Thread receiveDataThread = new Thread(() -> {
 							receiveData();
@@ -395,6 +480,15 @@ public class KidPaint extends JFrame {
 				}
 			});
 
+			frame.add(type);
+			frame.add(circle);
+			frame.add(square);
+
+			frame.add(new JLabel("Select Resolution"));
+			frame.add(low);
+			frame.add(med);
+			frame.add(high);
+
 			frame.add(label1);
 			System.out.println("Added label");
 			frame.add(text);
@@ -405,6 +499,7 @@ public class KidPaint extends JFrame {
 			frame.add(numCol);
 
 			frame.add(create);
+
 			System.out.println("Added Create Button");
 			// frame.add(add(new JSeparator(SwingConstants.HORIZONTAL)));
 			frame.add(label2);
@@ -423,6 +518,10 @@ public class KidPaint extends JFrame {
 
 							out.write(("select " + btn.getText()).getBytes()); // If clicked, send a "select
 																				// studio" TCP package
+
+							System.out.println("circle selected: " + circle.isSelected());
+							System.out.println("square selected: " + square.isSelected());
+
 							col = in.readInt();
 							System.out.println("Received col: " + col);
 							row = in.readInt();
@@ -431,7 +530,21 @@ public class KidPaint extends JFrame {
 							System.out.println("In select, receive col: " + col);
 							System.out.println("In select, receive row: " + row);
 
-							ui = UI.getInstance(col, row, btn.getText());
+							String type;
+
+							if (circle.isSelected())
+								type = "circle";
+							else
+								type = "square";
+
+							if (low.isSelected()) {
+								blockSize = 32;
+							} else if (high.isSelected()) {
+								blockSize = 8;
+							} else
+								blockSize = 16;
+
+							ui = UI.getInstance(col, row, text.getText(), type, blockSize);
 
 							Thread receiveDataThread = new Thread(() -> {
 								receiveData();
@@ -484,12 +597,35 @@ public class KidPaint extends JFrame {
 
 	public static void main(String[] args) throws UnknownHostException {
 		try {
+			
+			playSound("abc.mp3");
 			KidPaint name = new KidPaint();
+
 			// name.setVisible(true);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
+	}
+
+	public static synchronized void playSound(final String url) {
+		new Thread(new Runnable() {
+			// The wrapper thread is unnecessary, unless it blocks on the
+			// Clip finishing; see comments.
+			public void run() {
+				try {
+
+					FileInputStream musicStream = new FileInputStream(new File(url));
+
+					Clip clip = AudioSystem.getClip();
+					AudioInputStream inputStream = AudioSystem.getAudioInputStream(musicStream);
+					clip.open(inputStream);
+					clip.start();
+				} catch (Exception e) {
+					System.err.println(e.getMessage());
+				}
+			}
+		}).start();
 	}
 }

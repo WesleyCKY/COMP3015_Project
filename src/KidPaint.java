@@ -333,13 +333,17 @@ public class KidPaint extends JFrame {
 
 						String studioName = text.getText();
 
+						System.out.println("Text: " + studioName);
+
+						if (studioName.equals("")) {
+							JOptionPane.showMessageDialog(frame,
+									"Studio name cannot be empty. Please enter the name again.");
+							return;
+						}
+
 						for (String tmp : studio) {
 							if (tmp.equals(studioName)) {
 								JOptionPane.showMessageDialog(frame, "Studio name exists. Please enter another name.");
-								return;
-							} else if (tmp.equals("")) {
-								JOptionPane.showMessageDialog(frame,
-										"Studio name cannot be empty. Please enter the name again.");
 								return;
 							}
 						}
@@ -361,15 +365,17 @@ public class KidPaint extends JFrame {
 
 						String studioName = text.getText();
 
+						if (studioName.equals("")) {
+							JOptionPane.showMessageDialog(frame,
+									"Studio name cannot be empty. Please enter the name again.");
+							return;
+						}
+
 						for (String tmp : studio) {
 							if (tmp.equals(studioName)) {
 								JOptionPane.showMessageDialog(frame, "Studio name exists. Please enter another name.");
 								return;
-							} else if (tmp.equals("")) {
-								JOptionPane.showMessageDialog(frame,
-										"Studio name cannot be empty. Please enter the name again.");
-								return;
-							} 
+							}
 						}
 
 						createStudio(text.getText(), 50, 50);

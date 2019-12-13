@@ -497,7 +497,7 @@ public class UI extends JFrame {
 	// differential updates
 	public void send(int pixel, int col, int row) throws IOException {
 		// System.out.println("send pixel");
-		SimpleClient.send(pixel, col, row);
+		KidPaint.send(pixel, col, row);
 		// System.out.println("In UI send(), Sent!!!");
 	}
 
@@ -507,11 +507,11 @@ public class UI extends JFrame {
 		// for (Point p: list) {
 		// SimpleClient.send(data[p.x][p.y], p.x, p.y);
 		// }
-		SimpleClient.send(list, pixel);
+		KidPaint.send(list, pixel);
 	}
 
 	public void sendMsg(String msg) throws IOException {
-		SimpleClient.sendMsg(msg);
+		KidPaint.sendMsg(msg);
 	}
 
 	public void saveFile(String filename) {

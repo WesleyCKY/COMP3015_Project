@@ -13,10 +13,11 @@ import java.util.Scanner;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 //client
-public class KidPaint extends JFrame{
+public class KidPaint extends JFrame {
 	private String serverIP;
 	private int serverPort;
 	private Socket tcpSocket; // tcp socket used for data transmission between users and server
@@ -30,7 +31,7 @@ public class KidPaint extends JFrame{
 	private byte[] studioBuffer = new byte[1024];
 	private ArrayList<String> studio = new ArrayList<>(); // List of studios
 	private int numCol = 50; // default size
-	private int numRow = 50; 
+	private int numRow = 50;
 
 	public KidPaint() throws IOException {
 		inputName(); // Input name window
@@ -53,11 +54,11 @@ public class KidPaint extends JFrame{
 				System.out.println("In list loop...");
 				len = in.readInt();
 				System.out.println("Received length: " + len);
-				
+
 				in.read(studioBuffer, 0, len);
 				System.out.println("Received studioName: " + new String(studioBuffer, 0, len));
 				studio.add(new String(studioBuffer, 0, len)); // Add new received studio to the list
-				
+
 				// count++;
 				listSize--;
 				System.out.println("Received studio: " + new String(studioBuffer, 0, len));
@@ -203,7 +204,7 @@ public class KidPaint extends JFrame{
 
 				int pixel;
 				int col;
-				int row;			
+				int row;
 
 				if (in.readBoolean()) { // if pixel, return true
 
@@ -269,7 +270,7 @@ public class KidPaint extends JFrame{
 		container.add(label);
 		container.add(textField);
 		container.add(submit);
-		
+
 		setDefaultCloseOperation(EXIT_ON_CLOSE);
 
 		// Once submit name, activate the UI window
@@ -279,12 +280,12 @@ public class KidPaint extends JFrame{
 				// System.out.println("Hi!" + textField.getText());
 				try {
 					udpConnection(textField.getText()); // Create new client once input the user name
-					
+
 				} catch (IOException e1) {
 					// TODO Auto-generated catch block
 					e1.printStackTrace();
 				}
-				
+
 				setVisible(false); // If submitted, close input name window
 			}
 		});
@@ -320,7 +321,7 @@ public class KidPaint extends JFrame{
 			JLabel col = new JLabel("Please input the number of columns");
 			JTextField numRow = new JTextField();
 			JTextField numCol = new JTextField();
-			
+
 			JLabel label2 = new JLabel("Choose studios");
 
 			create.addActionListener(new ActionListener() {
@@ -328,48 +329,62 @@ public class KidPaint extends JFrame{
 					try {
 						int col = Integer.parseInt(numCol.getText());
 						int row = Integer.parseInt(numRow.getText());
-						
-						out.write(("create " + text.getText()).getBytes());
-						out.writeInt(col);
-						out.writeInt(row);
-						
-						ui = UI.getInstance(col, row, text.getText());
-						
-						frame.setVisible(false); // If created, close studio window
-						ui.setVisible(true);
-						
-						Thread receiveDataThread = new Thread(() -> {
-							receiveData();
-						});
+						byte[] buffer = new byte[1024];
 
-						receiveDataThread.start();
-						
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					} catch (NumberFormatException e1) {
-						
-						try {
-							out.write(("create " + text.getText()).getBytes());
-							out.writeInt(50);
-							out.writeInt(50);
-							
-						} catch (IOException e2) {
-							// TODO Auto-generated catch block
-							e2.printStackTrace();
+						String studioName = text.getText();
+
+						for (String tmp : studio) {
+							if (tmp.equals(studioName)) {
+								JOptionPane.showMessageDialog(frame, "Studio name exists. Please enter another name.");
+								return;
+							} else if (tmp.equals("")) {
+								JOptionPane.showMessageDialog(frame,
+										"Studio name cannot be empty. Please enter the name again.");
+								return;
+							}
 						}
-							
-						ui = UI.getInstance(50, 50, text.getText());
-						
+
+						createStudio(text.getText(), col, row);
+
+						ui = UI.getInstance(col, row, text.getText());
+
+						frame.setVisible(false); // If created, close studio window
+						ui.setVisible(true);
+
 						Thread receiveDataThread = new Thread(() -> {
 							receiveData();
 						});
 
 						receiveDataThread.start();
-						
+
+					} catch (NumberFormatException e1) {
+
+						String studioName = text.getText();
+
+						for (String tmp : studio) {
+							if (tmp.equals(studioName)) {
+								JOptionPane.showMessageDialog(frame, "Studio name exists. Please enter another name.");
+								return;
+							} else if (tmp.equals("")) {
+								JOptionPane.showMessageDialog(frame,
+										"Studio name cannot be empty. Please enter the name again.");
+								return;
+							} 
+						}
+
+						createStudio(text.getText(), 50, 50);
+
+						ui = UI.getInstance(50, 50, text.getText());
+
+						Thread receiveDataThread = new Thread(() -> {
+							receiveData();
+						});
+
+						receiveDataThread.start();
+
 						frame.setVisible(false); // If created, close studio window
 						ui.setVisible(true);
-						
+
 					}
 				}
 			});
@@ -385,7 +400,7 @@ public class KidPaint extends JFrame{
 
 			frame.add(create);
 			System.out.println("Added Create Button");
-//			frame.add(add(new JSeparator(SwingConstants.HORIZONTAL)));
+			// frame.add(add(new JSeparator(SwingConstants.HORIZONTAL)));
 			frame.add(label2);
 
 			for (int i = 0; i < studio.size(); i++) {
@@ -396,28 +411,28 @@ public class KidPaint extends JFrame{
 
 						try {
 							System.out.println("In select studio...");
-							
+
 							int col;
 							int row;
-							
+
 							out.write(("select " + btn.getText()).getBytes()); // If clicked, send a "select
 																				// studio" TCP package
 							col = in.readInt();
-							System.out.println("Received col: "+ col);
+							System.out.println("Received col: " + col);
 							row = in.readInt();
-							System.out.println("Received row: "+row);
-							
-							System.out.println("In select, receive col: "+col);
-							System.out.println("In select, receive row: "+row);
-							
+							System.out.println("Received row: " + row);
+
+							System.out.println("In select, receive col: " + col);
+							System.out.println("In select, receive row: " + row);
+
 							ui = UI.getInstance(col, row, btn.getText());
-							
+
 							Thread receiveDataThread = new Thread(() -> {
 								receiveData();
 							});
 
 							receiveDataThread.start();
-							
+
 							// includes the name of studio
 							frame.setVisible(false); // If submitted, close choose studio window
 							ui.setVisible(true);
@@ -432,18 +447,17 @@ public class KidPaint extends JFrame{
 				frame.add(btn); // Add button to the panel
 				System.out.println("Studio Button");
 			}
-			
+
 			frame.setDefaultCloseOperation(EXIT_ON_CLOSE);
-			
 
 			// System.out.println(frame);
 			setVisible(true);
 
-//			Thread receiveDataThread = new Thread(() -> {
-//				receiveData();
-//			});
-//
-//			receiveDataThread.start();
+			// Thread receiveDataThread = new Thread(() -> {
+			// receiveData();
+			// });
+			//
+			// receiveDataThread.start();
 
 		} else {
 			System.out.println("Error occurred! Size of list is not expected.");
@@ -451,14 +465,25 @@ public class KidPaint extends JFrame{
 		}
 	}
 
-    public static void main(String[] args) throws UnknownHostException {
-        try {
-			KidPaint name = new KidPaint();
-//			name.setVisible(true);
+	public void createStudio(String text, int col, int row) {
+		try {
+			out.write(("create " + text).getBytes());
+			out.writeInt(col);
+			out.writeInt(row);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-       
+	}
+
+	public static void main(String[] args) throws UnknownHostException {
+		try {
+			KidPaint name = new KidPaint();
+			// name.setVisible(true);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 	}
 }

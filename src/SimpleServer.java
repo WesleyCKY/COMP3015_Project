@@ -35,8 +35,8 @@ public class SimpleServer {
 	byte[] optionBuffer = new byte[1024];
 	int col;
 	int row;
-	byte[] echoBuffer = new byte [1024];
-	
+	byte[] echoBuffer = new byte[1024];
+
 	public static void main(String[] args) throws IOException {
 		// SimpleServer s;
 		// boolean established;
@@ -80,7 +80,7 @@ public class SimpleServer {
 						out.write(studio.getName().getBytes());
 						System.out.println("The list of studio: ");
 						System.out.println(studio.getName());
-						
+
 					}
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
@@ -89,12 +89,20 @@ public class SimpleServer {
 
 				Thread t = new Thread(() -> { // establish a new studio thread
 					// cases
-					
-					String option2 = receiveOption();
+					String option2;
+
+					// do {
+					option2 = receiveOption();
+					// } while (option2.equals("duplicate"));
+
 					try {
+
 						if (option2.equals("create")) {
+
 							System.out.println("Choose create!");
 							studioName = option.substring(7); // get the Studio title
+							// check if the studio name exit
+
 							System.out.println("The name of the studio: " + studioName);
 							Studio studio = new Studio(studioName, col, row); // handle clients in each
 							System.out.println("studio.getName():" + studio.getName());
@@ -104,12 +112,12 @@ public class SimpleServer {
 								System.out.printf("Total %d studios are created!", studiolist.size());
 								System.out.println();
 								for (Studio s : studiolist) {
-									System.out.println("Elemnts in studio list: ");
-									System.out.println(s.getName());
+									System.out.print("Elemnts in studio list:");
+									System.out.print(" "+s.getName()+ " ");
 								}
 							}
-							studio.handleClient(clientSocket);
-						} else if(option2.equals("select")){
+							studio.handleCreater(clientSocket);
+						} else if (option2.equals("select")) {
 							System.out.println("Choose selelct!");
 							studioName = option.substring(7); // get the Studio title
 							System.out.println("The selected studio: " + studioName);
@@ -117,10 +125,10 @@ public class SimpleServer {
 								if (studio.getName().equals(studioName)) {
 									System.out.println("The Studio name is found!");
 									out.writeInt(studio.returnCol());
-									System.out.println("Confirm the col: "+studio.returnCol());
+									System.out.println("Confirm the col: " + studio.returnCol());
 									System.out.println("Sent col");
 									out.writeInt(studio.returnRow());
-									System.out.println("Confirm the row: "+studio.returnRow());
+									System.out.println("Confirm the row: " + studio.returnRow());
 									System.out.println("Sent row");
 									studio.handleClient(clientSocket);
 									System.out.println("Handled client");
@@ -134,11 +142,11 @@ public class SimpleServer {
 						// System.out.println("e1 Exception");
 						e1.printStackTrace();
 					}
-//					synchronized (studiolist) {
-//						
-//						studiolist.remove(studio);
-//						System.out.println("Remove Studio");
-//					}
+					// synchronized (studiolist) {
+					//
+					// studiolist.remove(studio);
+					// System.out.println("Remove Studio");
+					// }
 				});
 				t.start();
 			}
@@ -192,6 +200,7 @@ public class SimpleServer {
 		System.out.println("In receiveOption()...");
 		try {
 			int size = 0;
+			// boolean status;
 			size = in.read(optionBuffer);
 			option = new String(optionBuffer, 0, size);
 			System.out.println("Option: " + option);
@@ -199,13 +208,40 @@ public class SimpleServer {
 				System.out.println("Confirm select");
 				return "select";
 			}
-//create new 
 			col = in.readInt();
 			row = in.readInt();
+
+			// create new
+			studioName = option.substring(7);
+			// if (studiolist.size() == 0) {
+			// System.out.println("Studio name approved!");
+			// status = true;
+			// out.writeBoolean(status);
+			// System.out.println("The success msg is sent!");
+			// }
+			//
+			// for (Studio studio : studiolist) {
+			//
+			// if (studioName.equals(studio.getName())) {
+			// System.out.println("Repeated name found !");
+			// status = false;
+			// out.writeBoolean(status);
+			// System.out.println("The error msg is sent!");
+			// return "duplicate";
+			// } else {
+			// System.out.println("Studio name approved!");
+			// status = true;
+			// out.writeBoolean(status);
+			// System.out.println("The success msg is sent!");
+			// break;
+			// }
+			// }
+
 			System.out.println("The Size of the new Studio col:" + col + ", row : " + row);
 			data = new int[col][row];
-			
+
 			return "create";
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

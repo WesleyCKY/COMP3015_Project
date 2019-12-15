@@ -600,7 +600,7 @@ public class KidPaint extends JFrame {
 	public static void main(String[] args) throws UnknownHostException {
 		try {
 			AudioPlayer music = new AudioPlayer();
-			music.play("music.wav");
+			music.play("startupmusic.wav");
 			
 			KidPaint name = new KidPaint();
 			// name.setVisible(true);

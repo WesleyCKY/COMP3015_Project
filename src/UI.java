@@ -1,6 +1,7 @@
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import java.awt.BorderLayout;
@@ -26,6 +27,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.awt.FlowLayout;
@@ -66,7 +68,13 @@ public class UI extends JFrame {
 	int blockSize; // 8, 16, 32
 	private String type;
 
+	private JLabel timeLabel = new JLabel("00:00:00");;
+
 	PaintMode paintMode = PaintMode.Pixel;
+
+	boolean isPen;
+	boolean isEraser;
+	boolean isBucket;
 
 	/**
 	 * get the instance of UI. Singleton design pattern.
@@ -94,6 +102,8 @@ public class UI extends JFrame {
 		System.out.println("Number of row: " + this.numRow);
 
 		data = new int[numCol][numRow];
+
+		System.out.println("Title: " + name);
 
 		setTitle(name);
 
@@ -125,17 +135,17 @@ public class UI extends JFrame {
 						g2.setColor(new Color(data[x][y])); // fill in color in circle
 
 						if (type.equals("circle")) {
-							
+
 							g2.fillArc(blockSize * x, blockSize * y, blockSize, blockSize, 0, 360);
 							g2.setColor(Color.darkGray); // draw the circles' boundaries
 							g2.drawArc(blockSize * x, blockSize * y, blockSize, blockSize, 0, 360);
-							
+
 						} else if (type.equals("square")) {
-							
+
 							g2.fillRect(blockSize * x, blockSize * y, 15, 15);
 							g2.setColor(Color.darkGray); // draw the circles' boundaries
 							g2.drawRect(blockSize * x, blockSize * y, 15, 15);
-							
+
 						}
 
 						// g2.fillArc(blockSize * x, blockSize * y, blockSize, blockSize, 0, 360);
@@ -151,6 +161,40 @@ public class UI extends JFrame {
 		paintPanel.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
+
+				System.out.println(e.getButton());
+
+				if (e.getButton() == 2) {
+					clearPixels();
+				} else if (e.getButton() == 3) {
+
+					isPen = tglPen.isSelected();
+					isBucket = tglBucket.isSelected();
+					isEraser = eraserBtn.isSelected();
+
+					System.out.println(isPen);
+					System.out.println(isBucket);
+					System.out.println(isEraser);
+
+					if (isPen == true && isBucket == false && isEraser == false) {
+						tglPen.setSelected(false);
+						tglBucket.setSelected(true);
+						eraserBtn.setSelected(false);
+						paintMode = PaintMode.Area;
+					} else if (isPen == false && isBucket == true && isEraser == false) {
+						tglPen.setSelected(false);
+						tglBucket.setSelected(false);
+						eraserBtn.setSelected(true);
+						paintMode = PaintMode.Pixel;
+						setEraser();
+
+					} else if (isPen == false && isBucket == false && isEraser == true) {
+						tglPen.setSelected(true);
+						tglBucket.setSelected(false);
+						eraserBtn.setSelected(false);
+						paintMode = PaintMode.Pixel;
+					}
+				}
 			}
 
 			@Override
@@ -168,8 +212,10 @@ public class UI extends JFrame {
 			// handle the mouse-up event of the paint panel
 			@Override
 			public void mouseReleased(MouseEvent e) {
-				if (paintMode == PaintMode.Area && e.getX() >= 0 && e.getY() >= 0)
+				if (paintMode == PaintMode.Area && e.getX() >= 0 && e.getY() >= 0 && e.getButton() == 1) {
+					System.out.println("Hi");
 					paintedAreaList = paintArea(e.getX() / blockSize, e.getY() / blockSize);
+				}
 			}
 		});
 
@@ -177,7 +223,9 @@ public class UI extends JFrame {
 
 			@Override
 			public void mouseDragged(MouseEvent e) {
-				if (paintMode == PaintMode.Pixel && e.getX() >= 0 && e.getY() >= 0)
+				System.out.println("Mouse type: " + e.getModifiersEx());
+
+				if (paintMode == PaintMode.Pixel && e.getX() >= 0 && e.getY() >= 0 && e.getModifiersEx() == 1024) // left
 					paintPixel(e.getX() / blockSize, e.getY() / blockSize);
 			}
 
@@ -241,8 +289,8 @@ public class UI extends JFrame {
 
 		tglBucket = new JToggleButton("Bucket");
 		toolPanel.add(tglBucket);
-		
-		eraserBtn = new  JToggleButton("Eraser");
+
+		eraserBtn = new JToggleButton("Eraser");
 		toolPanel.add(eraserBtn);
 
 		saveBtn = new JButton("Save");
@@ -253,6 +301,25 @@ public class UI extends JFrame {
 
 		clearBtn = new JButton("Clear All");
 		toolPanel.add(clearBtn);
+
+		toolPanel.add(timeLabel);
+
+		Thread t = new Thread(() -> {
+			while (true) {
+				Date dd = new Date();
+				timeLabel.setText(dd.getHours() + " : " + dd.getMinutes() + " : " + dd.getSeconds());
+
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				} // 1000 = 1 second
+			}
+
+		});
+
+		t.start();
 
 		// perform save function
 		saveBtn.addActionListener(new ActionListener() {
@@ -317,7 +384,7 @@ public class UI extends JFrame {
 				paintMode = PaintMode.Area;
 			}
 		});
-		
+
 		eraserBtn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -374,7 +441,7 @@ public class UI extends JFrame {
 		scrollPaneRight.setPreferredSize(new Dimension(300, this.getHeight()));
 		msgPanel.add(scrollPaneRight, BorderLayout.CENTER);
 
-		this.setSize(new Dimension(800, 600));
+		this.setSize(new Dimension(1000, 600));
 		this.setDefaultCloseOperation(EXIT_ON_CLOSE);
 	}
 
@@ -638,8 +705,8 @@ public class UI extends JFrame {
 			}
 		}
 	}
-	
+
 	public void setEraser() {
-		selectedColor = 0;
+		selectColor(0);
 	}
 }

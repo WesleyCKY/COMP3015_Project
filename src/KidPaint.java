@@ -15,6 +15,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -29,6 +30,8 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
+
+import net.codejava.sound.AudioPlayer;
 
 //client
 public class KidPaint extends JFrame {
@@ -64,7 +67,6 @@ public class KidPaint extends JFrame {
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				// Your database code here
 				System.exit(0);
 			}
 		}, time);
@@ -301,7 +303,7 @@ public class KidPaint extends JFrame {
 		JLabel label = new JLabel("Please enter your name: ");
 
 		JButton submit = new JButton("Submit");
-
+		
 		container.add(label);
 		container.add(textField);
 		container.add(submit);
@@ -544,7 +546,7 @@ public class KidPaint extends JFrame {
 							} else
 								blockSize = 16;
 
-							ui = UI.getInstance(col, row, text.getText(), type, blockSize);
+							ui = UI.getInstance(col, row, btn.getText(), type, blockSize);
 
 							Thread receiveDataThread = new Thread(() -> {
 								receiveData();
@@ -597,35 +599,15 @@ public class KidPaint extends JFrame {
 
 	public static void main(String[] args) throws UnknownHostException {
 		try {
+			AudioPlayer music = new AudioPlayer();
+			music.play("music.wav");
 			
-			playSound("abc.mp3");
 			KidPaint name = new KidPaint();
-
 			// name.setVisible(true);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
-	}
-
-	public static synchronized void playSound(final String url) {
-		new Thread(new Runnable() {
-			// The wrapper thread is unnecessary, unless it blocks on the
-			// Clip finishing; see comments.
-			public void run() {
-				try {
-
-					FileInputStream musicStream = new FileInputStream(new File(url));
-
-					Clip clip = AudioSystem.getClip();
-					AudioInputStream inputStream = AudioSystem.getAudioInputStream(musicStream);
-					clip.open(inputStream);
-					clip.start();
-				} catch (Exception e) {
-					System.err.println(e.getMessage());
-				}
-			}
-		}).start();
 	}
 }

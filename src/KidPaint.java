@@ -59,7 +59,8 @@ public class KidPaint extends JFrame {
 	private JRadioButton low = new JRadioButton("Low Resolution");
 	private JRadioButton med = new JRadioButton("Medium Resolution");
 	private JRadioButton high = new JRadioButton("High Resolution");
-
+	JFrame frame = new JFrame();
+	
 	public KidPaint() throws IOException {
 
 		Timer timer = new Timer();
@@ -67,6 +68,7 @@ public class KidPaint extends JFrame {
 		timer.schedule(new TimerTask() {
 			@Override
 			public void run() {
+				JOptionPane.showMessageDialog(frame, "Time is up!");
 				System.exit(0);
 			}
 		}, time);
@@ -338,7 +340,7 @@ public class KidPaint extends JFrame {
 	public void studio() {
 
 		if (receiveStudioList()) {
-			JFrame frame = new JFrame();
+//			JFrame frame = new JFrame();
 			frame.setVisible(true);
 			frame.setSize(300, 600);
 
@@ -486,7 +488,7 @@ public class KidPaint extends JFrame {
 			frame.add(circle);
 			frame.add(square);
 
-			frame.add(new JLabel("Select Resolution"));
+			frame.add(new JLabel("Please select resolution of the sketch"));
 			frame.add(low);
 			frame.add(med);
 			frame.add(high);
